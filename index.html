@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY GLOBAL SNIPER | LOGIN</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #000; --card: #0d1117; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        
+        .login-card { background: var(--card); border: 2px solid var(--p); padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 204, 0.2); width: 90%; max-width: 380px; }
+        .logo { font-size: 26px; font-weight: 900; color: var(--p); letter-spacing: 3px; display: block; margin-bottom: 10px; }
+        .status-msg { font-size: 11px; color: #888; margin-bottom: 30px; line-height: 1.6; }
+
+        #app-content { display: none; }
+        .tool-btn { width: 100%; padding: 16px; margin: 12px 0; background: #161b22; border: 1px solid #30363d; color: #fff; border-radius: 12px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 15px; font-family: inherit; transition: 0.3s; }
+        .tool-btn:hover { border-color: var(--p); background: #1c2128; }
+        .tool-btn i { color: var(--p); font-size: 18px; }
+
+        #login-section { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="login-card">
+        <span class="logo">DVARY_SNIPER</span>
+        <p class="status-msg" id="msg">MFUMO WA KIJASUSI UMEFUNGWA.<br>INGIA NA GOOGLE ILI KUUFUNGUA.</p>
+        
+        <div id="g_id_onload"
+             data-client_id="780869166873-t31o6u8h33g3ol57f0fgi4bmrdtshdg5.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        
+        <div style="display: flex; justify-content: center;">
+            <div class="g_id_signin" 
+                 data-type="standard" 
+                 data-size="large" 
+                 data-theme="filled_black" 
+                 data-text="signin_with" 
+                 data-shape="rectangular" 
+                 data-logo_alignment="left">
+            </div>
+        </div>
+    </div>
+
+    <div id="app-content" class="login-card">
+        <span class="logo" style="font-size: 20px;">COMMANDER_ACTIVE</span>
+        <p class="status-msg">Umeruhusiwa kisheria kutumia mifumo hii.</p>
+
+        <button class="tool-btn"><i class="fas fa-bolt"></i> Speed Sniper Pro</button>
+        <button class="tool-btn"><i class="fas fa-shield-alt"></i> Account Guard</button>
+        <button class="tool-btn"><i class="fas fa-ghost"></i> Message Encrypter</button>
+
+        <button onclick="logout()" style="background:none; border:none; color:#ff4444; cursor:pointer; margin-top:25px; font-size:11px; text-decoration: underline;">LOGOUT / DISCONNECT</button>
+    </div>
+
+    <script>
+        // Kazi ya kushughulikia login
+        function handleCredentialResponse(response) {
+            // Hapa kitalaamu tunapokea Token ya Google
+            console.log("Token imepokelewa kitalaamu...");
+            
+            // Tunabadilisha muonekano
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            
+            // Sauti ya ujasusi (Optional)
+            alert("Ukitambuliwa kama AGENT. Karibu Kamanda Elia!");
+        }
+
+        function logout() {
+            // Inarudisha login
+            location.reload();
+        }
+    </script>
+</body>
+</html>
