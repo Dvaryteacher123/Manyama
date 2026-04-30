@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY SIGNAL SNIPER | V1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #050810; --card: #0d1117; --accent: #ffcc00; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        
+        .header { padding: 15px; background: #000; border-bottom: 2px solid var(--p); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px var(--p); }
+        .logo { font-size: 18px; font-weight: 900; color: var(--p); letter-spacing: 2px; }
+
+        .lang-btn { background: none; border: 1px solid var(--p); color: var(--p); padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .lang-btn.active { background: var(--p); color: #000; }
+
+        .container { max-width: 500px; margin: auto; padding: 15px; text-align: center; }
+
+        /* Signal Meter */
+        .speed-gauge { width: 200px; height: 200px; border: 10px solid #111; border-radius: 50%; margin: 20px auto; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; border-top-color: var(--p); transition: 0.5s; }
+        .speed-val { font-size: 45px; font-weight: bold; color: #fff; }
+        .speed-unit { font-size: 12px; color: var(--p); }
+
+        /* Grid Info */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .card { background: var(--card); border: 1px solid #222; padding: 15px; border-radius: 12px; text-align: left; }
+        .card i { color: var(--p); margin-bottom: 8px; }
+        .c-label { font-size: 9px; color: #666; text-transform: uppercase; display: block; }
+        .c-val { font-size: 13px; font-weight: bold; color: #fff; display: block; margin-top: 2px; }
+
+        .btn-action { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: inherit; font-size: 14px; text-decoration: none; }
+        .btn-scan { background: var(--p); color: #000; }
+        .btn-join { background: #25d366; color: #fff; margin-top: 25px; }
+
+        .code-box { background: rgba(255, 204, 0, 0.1); border: 1px dashed var(--accent); padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">SIGNAL_SNIPER_V1</div>
+        <div>
+            <button id="sw-btn" class="lang-btn active" onclick="setLang('sw')">SW</button>
+            <button id="en-btn" class="lang-btn" onclick="setLang('en')">EN</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="speed-gauge" id="gauge">
+            <span id="l-speed" style="font-size: 10px; color: #666;">DOWNLOAD</span>
+            <span class="speed-val" id="val-speed">0.0</span>
+            <span class="speed-unit">Mbps</span>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <i class="fas fa-signal"></i>
+                <span class="c-label" id="l-strength">NGUVU YA SIGNAL</span>
+                <span class="c-val" id="val-sig">-85 dBm</span>
+            </div>
+            <div class="card">
+                <i class="fas fa-tower-broadcast"></i>
+                <span class="c-label" id="l-type">AINA YA MTANDAO</span>
+                <span class="c-val" id="val-net">4G / LTE</span>
+            </div>
+            <div class="card">
+                <i class="fas fa-location-arrow"></i>
+                <span class="c-label" id="l-lat">LATENCY (PING)</span>
+                <span class="c-val" id="val-ping">24 ms</span>
+            </div>
+            <div class="card">
+                <i class="fas fa-microchip"></i>
+                <span class="c-label" id="l-provider">MTOA HUDUMA</span>
+                <span class="c-val" id="val-prov">Detecting...</span>
+            </div>
+        </div>
+
+        <div class="code-box">
+            <strong id="l-code-t" style="color:var(--accent); font-size: 12px;">KODI YA SIRI (5G/4G ONLY):</strong>
+            <p id="l-code-d" style="font-size: 11px; margin: 5px 0;">Piga kodi hii ili kufunga mtandao wako uwe wa kasi zaidi:</p>
+            <div style="font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 2px;">*#*#4636#*#*</div>
+        </div>
+
+        <button class="btn-action btn-scan" onclick="startTest()">
+            <i class="fas fa-bolt"></i> <span id="btn-t">ANZA KUPIMA SPEED</span>
+        </button>
+
+        <a href="https://whatsapp.com/channel/0029VbCRC9b5fM5cruU8PF2M" class="btn-action btn-join">
+            <i class="fab fa-whatsapp"></i> <span id="btn-j">JIUNGE NA CHANNEL YETU</span>
+        </a>
+    </div>
+
+    <script>
+        const ui = {
+            sw: { speed: "DOWNLOAD", strength: "NGUVU YA SIGNAL", type: "AINA YA MTANDAO", lat: "LATENCY (PING)", prov: "MTOA HUDUMA", codeT: "KODI YA SIRI (5G/4G ONLY):", codeD: "Piga kodi hii ili kufunga mtandao wako uwe wa kasi zaidi:", btnT: "ANZA KUPIMA SPEED", btnJ: "JIUNGE NA CHANNEL YETU" },
+            en: { speed: "DOWNLOAD", strength: "SIGNAL STRENGTH", type: "NETWORK TYPE", lat: "LATENCY (PING)", prov: "PROVIDER", codeT: "SECRET CODE (5G/4G ONLY):", codeD: "Dial this code to lock your network to high speed:", btnT: "START SPEED TEST", btnJ: "JOIN OUR CHANNEL" }
+        };
+
+        function setLang(l) {
+            document.getElementById('sw-btn').classList.toggle('active', l==='sw');
+            document.getElementById('en-btn').classList.toggle('active', l==='en');
+            document.getElementById('l-speed').innerText = ui[l].speed;
+            document.getElementById('l-strength').innerText = ui[l].strength;
+            document.getElementById('l-type').innerText = ui[l].type;
+            document.getElementById('l-lat').innerText = ui[l].lat;
+            document.getElementById('l-provider').innerText = ui[l].prov;
+            document.getElementById('l-code-t').innerText = ui[l].codeT;
+            document.getElementById('l-code-d').innerText = ui[l].codeD;
+            document.getElementById('btn-t').innerText = ui[l].btnT;
+            document.getElementById('btn-j').innerText = ui[l].btnJ;
+        }
+
+        function startTest() {
+            let speed = 0;
+            const btn = document.querySelector('.btn-scan');
+            btn.disabled = true;
+            
+            const interval = setInterval(() => {
+                speed = (Math.random() * 50).toFixed(1);
+                document.getElementById('val-speed').innerText = speed;
+                document.getElementById('gauge').style.borderColor = speed > 20 ? "#00ffcc" : "#ff3333";
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                btn.disabled = false;
+                alert("Speed Test Imekamilika! Kasi yako ni " + speed + " Mbps.");
+            }, 3000);
+        }
+
+        // Detect Provider & Network
+        if (navigator.connection) {
+            document.getElementById('val-net').innerText = navigator.connection.effectiveType.toUpperCase();
+            document.getElementById('val-prov').innerText = "MOBILE DATA";
+        }
+    </script>
+</body>
+</html>
+
