@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY OPTIMIZER | V125 PRO</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #000; --danger: #ff003c; --card: #0d1117; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        
+        /* Login Screen */
+        #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+        .login-box { border: 1px solid var(--p); padding: 30px; border-radius: 20px; box-shadow: 0 0 20px var(--p); width: 85%; max-width: 350px; }
+
+        /* Main Dashboard */
+        .header { padding: 15px; border-bottom: 2px solid var(--p); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 18px; font-weight: 900; color: var(--p); text-shadow: 0 0 10px var(--p); }
+        .lang-btns { display: flex; gap: 5px; }
+        .l-btn { background: none; border: 1px solid var(--p); color: var(--p); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
+        .l-btn.active { background: var(--p); color: #000; }
+
+        .container { max-width: 500px; margin: auto; padding: 15px; text-align: center; }
+        .gauge { width: 170px; height: 170px; border: 5px solid #111; border-radius: 50%; margin: 15px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; border-top-color: var(--p); border-left-color: var(--p); transition: 0.5s; }
+        .critical { border-color: var(--danger) !important; box-shadow: 0 0 30px var(--danger); animation: shake 0.2s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, 1px); } }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .card { background: var(--card); border: 1px solid #222; padding: 12px; border-radius: 10px; text-align: left; }
+        .c-lbl { font-size: 9px; color: #555; text-transform: uppercase; }
+        .c-val { font-size: 13px; font-weight: bold; display: block; margin-top: 2px; }
+
+        .terminal { background: #050810; border: 1px solid #1a1a1a; height: 100px; border-radius: 8px; margin: 15px 0; padding: 10px; text-align: left; overflow: hidden; font-size: 10px; color: var(--p); }
+        .btn-join { background: #25d366; color: #fff; padding: 15px; border-radius: 10px; display: block; text-decoration: none; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <span class="logo" style="margin-bottom: 20px; display: block;">DVARY_SNIPER</span>
+            <p style="font-size: 11px; color: #888; margin-bottom: 30px;" id="l-msg">MFUMO UMEFUNGWA. INGIA NA GOOGLE.</p>
+            
+            <div id="g_id_onload"
+                 data-client_id="780869166873-t31o6u8h33g3ol57f0fgi4bmrdtshdg5.apps.googleusercontent.com"
+                 data-callback="onSignIn">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large"></div>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none;">
+        <div class="header">
+            <div class="logo">OPTIMIZER_V125</div>
+            <div class="lang-btns">
+                <button id="sw-btn" class="l-btn active" onclick="setLang('sw')">SW</button>
+                <button id="en-btn" class="l-btn" onclick="setLang('en')">EN</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="gauge" id="mainGauge">
+                <span id="txt-lvl" style="font-size: 10px; color: #666;">LEVEL</span>
+                <span id="batPer" style="font-size: 45px; font-weight: bold;">0%</span>
+                <span id="batTemp" style="color: #ffcc00; font-size: 15px;">30.0°C</span>
+            </div>
+
+            <div class="terminal" id="term"></div>
+
+            <div class="grid">
+                <div class="card"><span class="c-lbl" id="lbl-status">STATUS</span><span class="c-val" id="val-status">...</span></div>
+                <div class="card"><span class="c-lbl" id="lbl-net">NETWORK</span><span class="c-val" id="val-net">4G/LTE</span></div>
+                <div class="card"><span class="c-lbl" id="lbl-ram">RAM</span><span class="c-val" id="val-ram">--</span></div>
+                <div class="card"><span class="c-lbl" id="lbl-health">HEALTH</span><span class="c-val" id="val-health" style="color:var(--p)">EXCELLENT</span></div>
+            </div>
+
+            <a href="https://whatsapp.com/channel/0029VbCRC9b5fM5cruU8PF2M" class="btn-join" id="lbl-join">JIUNGE NA CHANNEL YETU</a>
+        </div>
+    </div>
+
+    <audio id="alarm"><source src="https://cdn.pixabay.com/audio/2022/03/24/audio_349692c81a.mp3"></audio>
+
+    <script>
+        let currentLang = 'sw';
+        const dictionary = {
+            sw: { msg: "INGIA NA GOOGLE ILI KUFUNGUA MFUMO", lvl: "BETRI", status: "HALI", net: "MTANDAO", ram: "RAM", health: "AFYA", join: "JIUNGE NA CHANNEL YETU", conn: "IMEUNGANISHWA", dis: "HAICHAJI", logs: ["> [UCHAMBUZI] ... OK", "> [USALAMA] ... ACTIVE", "> [DVARY] ... ONLINE"] },
+            en: { msg: "SIGN IN WITH GOOGLE TO UNLOCK SYSTEM", lvl: "LEVEL", status: "STATUS", net: "NETWORK", ram: "RAM", health: "HEALTH", join: "JOIN OUR CHANNEL", conn: "CONNECTED", dis: "DISCONNECTED", logs: ["> [SCANNING] ... OK", "> [SECURITY] ... ACTIVE", "> [DVARY] ... ONLINE"] }
+        };
+
+        function setLang(l) {
+            currentLang = l;
+            document.getElementById('sw-btn').classList.toggle('active', l==='sw');
+            document.getElementById('en-btn').classList.toggle('active', l==='en');
+            document.getElementById('l-msg').innerText = dictionary[l].msg;
+            document.getElementById('txt-lvl').innerText = dictionary[l].lvl;
+            document.getElementById('lbl-status').innerText = dictionary[l].status;
+            document.getElementById('lbl-net').innerText = dictionary[l].net;
+            document.getElementById('lbl-ram').innerText = dictionary[l].ram;
+            document.getElementById('lbl-health').innerText = dictionary[l].health;
+            document.getElementById('lbl-join').innerText = dictionary[l].join;
+        }
+
+        function onSignIn(response) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            runApp();
+        }
+
+        function runApp() {
+            setInterval(() => {
+                if('getBattery' in navigator) {
+                    navigator.getBattery().then(bat => {
+                        document.getElementById('batPer').innerText = Math.round(bat.level * 100) + "%";
+                        document.getElementById('val-status').innerText = bat.charging ? dictionary[currentLang].conn : dictionary[currentLang].dis;
+                        let temp = bat.charging ? 41.0 : 32.8;
+                        document.getElementById('batTemp').innerText = temp + "°C";
+                        if(temp >= 40) { document.getElementById('mainGauge').classList.add('critical'); document.getElementById('alarm').play(); }
+                        else { document.getElementById('mainGauge').classList.remove('critical'); document.getElementById('alarm').pause(); }
+                    });
+                }
+                document.getElementById('val-ram').innerText = (Math.random() * 2 + 2).toFixed(1) + "GB / 8GB";
+                if(navigator.connection) document.getElementById('val-net').innerText = navigator.connection.effectiveType.toUpperCase();
+
+                const line = document.createElement('div');
+                const logs = dictionary[currentLang].logs;
+                line.innerText = logs[Math.floor(Math.random() * logs.length)] + " [" + Math.random().toString(16).substr(2,4) + "]";
+                document.getElementById('term').appendChild(line);
+                if(document.getElementById('term').childNodes.length > 7) document.getElementById('term').removeChild(document.getElementById('term').firstChild);
+            }, 1500);
+        }
+        setLang('sw');
+    </script>
+</body>
+</html>
+
