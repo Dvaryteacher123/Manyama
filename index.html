@@ -1,0 +1,39 @@
+        async function getAIResponse(prompt) {
+            // Onyesha kuwa AI inafikiria
+            const chatContainer = document.getElementById('chat-container');
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'bubble ai-msg';
+            loadingBubble.id = 'temp-loading';
+            loadingBubble.innerHTML = `<span class="u-name">DVARY_AI</span> <i>Inatafuta jibu kitalaamu...</i>`;
+            chatContainer.appendChild(loadingBubble);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                // Hapa ndipo tunaita ubongo wa AI
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                const data = await res.json();
+                
+                // Ondoa ile "loading" bubble
+                document.getElementById('temp-loading').remove();
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    // Tuma jibu la AI kwenye ntfy ili kila mtu alione
+                    await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `DVARY_AI::${aiText}` });
+                } else {
+                    alert("AI imepata kashikashi kidogo, jaribu tena!");
+                }
+            } catch(e) {
+                document.getElementById('temp-loading').remove();
+                console.error("Kosa la ujasusi:", e);
+                alert("Mtandao unasumbua kuunganisha na AI!");
+            }
+        }
+
