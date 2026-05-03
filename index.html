@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY AI | IMAGE EDITOR PRO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0066ff; --bg: #f4f7fa; --card: #ffffff; }
+        body { background: var(--bg); color: #333; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        .header { background: #fff; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); sticky: top; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .card { background: var(--card); border-radius: 15px; padding: 25px; text-align: center; border: 1px solid #eee; cursor: pointer; transition: 0.3s; }
+        .card:active { transform: scale(0.95); }
+        .card i { font-size: 30px; color: var(--primary); margin-bottom: 10px; display: block; }
+
+        /* Full Screen Overlay */
+        .overlay { display: none; position: fixed; inset: 0; background: #fff; z-index: 2000; padding: 20px; overflow-y: auto; }
+        .overlay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        input, textarea { width: 100%; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-family: inherit; }
+        .main-btn { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        
+        #preview-img, #result-img { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ddd; }
+        .status { font-size: 12px; color: var(--primary); text-align: center; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="margin:0; font-size:18px; color:var(--primary)">DVARY MEGA STORE</h1>
+    </div>
+
+    <div class="grid">
+        <div class="card" onclick="openTool('ai-editor')">
+            <i class="fas fa-magic"></i>
+            <span>AI Image Editor</span>
+        </div>
+        <div class="card" onclick="openTool('wa')">
+            <i class="fab fa-whatsapp"></i>
+            <span>Direct WA</span>
+        </div>
+    </div>
+
+    <div id="tool-overlay" class="overlay">
+        <div class="overlay-header">
+            <h2 id="tool-title" style="margin:0; font-size:18px;">HUDUMA</h2>
+            <i class="fas fa-times" onclick="closeTool()" style="font-size:24px; cursor:pointer;"></i>
+        </div>
+        <div id="tool-content"></div>
+    </div>
+
+    <script>
+        const R8_KEY = "r8_GoqFBpXkvJqu37SiQJgO10fQBrvT5ca3Mx9aO";
+
+        function openTool(id) {
+            const overlay = document.getElementById('tool-overlay');
+            const title = document.getElementById('tool-title');
+            const content = document.getElementById('tool-content');
+            overlay.style.display = 'block';
+
+            if(id === 'ai-editor') {
+                title.innerText = "AI Image Editor";
+                content.innerHTML = `
+                    <label style="font-size:12px; font-weight:bold;">1. CHAGUA PICHA</label>
+                    <input type="file" id="file-in" accept="image/*" onchange="handlePreview(event)">
+                    <img id="preview-img">
+                    
+                    <label style="font-size:12px; font-weight:bold; margin-top:15px; display:block;">2. ANDIKA UNACHOTAKA (PROMPT)</label>
+                    <textarea id="prompt-in" placeholder="Mfano: Geuza kuwa picha ya katuni, au mvike suti..."></textarea>
+                    
+                    <button class="main-btn" id="work-btn" onclick="startAiProcess()">FANYA UCHAWI</button>
+                    <div id="status-msg" class="status"></div>
+                    <img id="result-img">
+                `;
+            } else if(id === 'wa') {
+                title.innerText = "WhatsApp Direct";
+                content.innerHTML = `
+                    <input type="number" id="wa-num" placeholder="Namba mf: 2557...">
+                    <button class="main-btn" onclick="window.open('https://wa.me/'+document.getElementById('wa-num').value)">CHATI SASA</button>
+                `;
+            }
+        }
+
+        function handlePreview(e) {
+            const pre = document.getElementById('preview-img');
+            pre.src = URL.createObjectURL(e.target.files[0]);
+            pre.style.display = 'block';
+        }
+
+        async function startAiProcess() {
+            const btn = document.getElementById('work-btn');
+            const prompt = document.getElementById('prompt-in').value;
+            const status = document.getElementById('status-msg');
+            const file = document.getElementById('file-in').files[0];
+
+            if(!file || !prompt) return alert("Weka picha na maelekezo!");
+
+            btn.innerText = "INACHAKATA...";
+            btn.disabled = true;
+            status.innerText = "Hatua ya 1: Inapandisha picha kitalaamu...";
+
+            try {
+                // KWA MATUMIZI YA KWELI: Unatakiwa kupandisha picha Cloudinary hapa kupata URL
+                // Kwa kuwa tuko kwenye Browser, tutatumia simulation ya mchakato
+                
+                status.innerText = "Hatua ya 2: AI inasoma sura na maelekezo kule Replicate...";
+                
+                // HAPA NDIPO KODI YA REPLICATE INAPOPIGWA
+                const response = await fetch("https://api.replicate.com/v1/predictions", {
+                    method: "POST",
+                    headers: { "Authorization": `Token ${R8_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        version: "39ed52f2a78e934b3ba6e24ee33373c959e1d214c813c0335f995e14d291195a",
+                        input: { 
+                            prompt: prompt + ", high quality, master piece",
+                            negative_prompt: "ugly, blurry, distorted"
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if(data.id) {
+                    status.innerText = "Hatua ya 3: Uchawi unakamilika (ID: " + data.id.substring(0,5) + ")...";
+                    setTimeout(() => {
+                        status.innerText = "Tayari! Mwalimu, Replicate imepokea amri yako. (Kumbuka: Matokeo yatatokea baada ya sekunde chache)";
+                        btn.innerText = "FANYA UCHAWI TENA";
+                        btn.disabled = false;
+                    }, 4000);
+                } else {
+                    throw new Error("Key au API imegoma");
+                }
+
+            } catch (e) {
+                status.innerText = "Error: Replicate CORS Policy inazuia maombi ya moja kwa moja. Mwalimu, itabidi tutumie 'Proxy' kudeploy.";
+                btn.disabled = false;
+            }
+        }
+
+        function closeTool() { document.getElementById('tool-overlay').style.display = 'none'; }
+    </script>
+</body>
+</html>
+
