@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY STORE | DIGITAL SOLUTIONS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0066ff; --bg: #f4f7fa; --card: #ffffff; --text: #333; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 0; }
+        
+        .header { background: #fff; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .header h1 { margin: 0; font-size: 20px; color: var(--primary); font-weight: 800; letter-spacing: 1px; }
+
+        .welcome { padding: 25px 20px; text-align: center; }
+        .welcome h2 { margin: 0; font-size: 22px; }
+
+        /* Grid Services */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 30px; }
+        .card { background: var(--card); border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #eee; cursor: pointer; transition: 0.3s; }
+        .card:active { transform: scale(0.95); background: #f9f9f9; }
+        .card i { font-size: 32px; color: var(--primary); margin-bottom: 12px; display: block; }
+        .card span { font-weight: 600; font-size: 13px; }
+
+        /* Overlay System */
+        .overlay { display: none; position: fixed; inset: 0; background: #fff; z-index: 2000; padding: 25px; overflow-y: auto; }
+        .overlay-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-btn { font-size: 20px; color: var(--primary); cursor: pointer; }
+        
+        input, textarea, select { width: 100%; padding: 14px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
+        .main-btn { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,102,255,0.2); }
+
+        #chat-box { background: #f8f9fb; border-radius: 15px; padding: 15px; height: 300px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; font-size: 14px; }
+        .msg { margin-bottom: 10px; line-height: 1.5; }
+        .res-img { width: 100%; border-radius: 15px; margin-top: 15px; border: 2px solid var(--primary); display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>DVARY SOLUTIONS</h1>
+    </div>
+
+    <div class="welcome">
+        <h2>Habari, Elia!</h2>
+        <p style="color:#888; font-size:13px;">Chagua kituo cha ujasusi kuanza.</p>
+    </div>
+
+    <div class="grid">
+        <div class="card" onclick="openTool('ai')">
+            <i class="fas fa-comment-dots"></i>
+            <span>AI Chat Hub</span>
+        </div>
+        <div class="card" onclick="openTool('magic')">
+            <i class="fas fa-magic"></i>
+            <span>AI Image Magic</span>
+        </div>
+        <div class="card" onclick="openTool('wa')">
+            <i class="fab fa-whatsapp"></i>
+            <span>Direct Chat</span>
+        </div>
+        <div class="card" onclick="openTool('smm')">
+            <i class="fas fa-users"></i>
+            <span>SMM Store</span>
+        </div>
+    </div>
+
+    <div id="station-overlay" class="overlay">
+        <div class="overlay-header">
+            <i class="fas fa-arrow-left back-btn" onclick="closeTool()"></i>
+            <h2 id="tool-title" style="margin:0; font-size: 18px;">Service</h2>
+        </div>
+        <div id="tool-content"></div>
+    </div>
+
+    <script>
+        // Ficha Key zako hapa kitalaamu (Zitawekwa kule Vercel Settings baadae)
+        const GEMINI_KEY = "AIzaSyCZRL7riGzC7JlGsoH2-X2waafCp5mTZkI"; 
+        
+        function openTool(id) {
+            const overlay = document.getElementById('station-overlay');
+            const title = document.getElementById('tool-title');
+            const content = document.getElementById('tool-content');
+            overlay.style.display = 'block';
+
+            if(id === 'ai') {
+                title.innerText = "AI Chat Hub";
+                content.innerHTML = `
+                    <div id="chat-box"><b>AI:</b> Nipo tayari kitalaamu, nikupe msaada gani?</div>
+                    <textarea id="ai-in" placeholder="Uliza swali lolote..."></textarea>
+                    <button class="main-btn" onclick="askAI()">TUMA SWALI</button>
+                `;
+            } else if(id === 'magic') {
+                title.innerText = "AI Image Magic";
+                content.innerHTML = `
+                    <p style="font-size:12px; color:#666;">Geuza picha yako kuwa Anime au 3D kitalaamu.</p>
+                    <input type="text" id="img-url" placeholder="Paste link ya picha (URL) hapa...">
+                    <button class="main-btn" id="magic-btn" onclick="runMagic()">ANZA UCHAWI</button>
+                    <img id="result-img" class="res-img" src="">
+                `;
+            } else if(id === 'wa') {
+                title.innerText = "Direct WhatsApp";
+                content.innerHTML = `
+                    <input type="number" id="wa-num" placeholder="Namba (2557...)">
+                    <button class="main-btn" onclick="window.open('https://wa.me/'+document.getElementById('wa-num').value)">ANZA CHAT</button>
+                `;
+            } else if(id === 'smm') {
+                title.innerText = "SMM Services";
+                content.innerHTML = `
+                    <select><option>TikTok Followers</option><option>Instagram Likes</option></select>
+                    <input type="text" placeholder="Link ya Account/Post">
+                    <button class="main-btn">AGIZA SASA</button>
+                `;
+            }
+        }
+
+        function closeTool() { document.getElementById('station-overlay').style.display = 'none'; }
+
+        // --- GEMINI AI LOGIC ---
+        async function askAI() {
+            const input = document.getElementById('ai-in');
+            const box = document.getElementById('chat-box');
+            if(!input.value) return;
+
+            const text = input.value;
+            box.innerHTML += `<div class="msg"><b>Wewe:</b> ${text}</div>`;
+            input.value = "";
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+                });
+                const data = await res.json();
+                const reply = data.candidates[0].content.parts[0].text;
+                box.innerHTML += `<div class="msg" style="color:var(--primary)"><b>AI:</b> ${reply}</div>`;
+                box.scrollTop = box.scrollHeight;
+            } catch(e) { box.innerHTML += `<div style="color:red">Hitilafu ya mtandao!</div>`; }
+        }
+
+        // --- REPLICATE IMAGE MAGIC ---
+        async function runMagic() {
+            const btn = document.getElementById('magic-btn');
+            const url = document.getElementById('img-url').value;
+            if(!url) return alert("Weka URL ya picha!");
+
+            btn.innerText = "UCHAWI UNAENDELEA...";
+            btn.disabled = true;
+
+            // Hapa itapiga API kupitia Vercel Backend kwa usalama
+            setTimeout(() => {
+                alert("Mwalimu, picha yako inachakatwa kitalaamu kule Replicate!");
+                btn.innerText = "ANZA UCHAWI";
+                btn.disabled = false;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
