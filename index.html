@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY MEGA STORE | GPT EDITION</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #010409; --card: #0d1117; --accent: #10a37f; } /* ChatGPT Green Accent */
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        
+        .main-header { background: #000; padding: 20px; border-bottom: 2px solid var(--p); text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--p); text-shadow: 0 0 10px var(--p); letter-spacing: 2px; }
+
+        .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .store-item { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 25px; text-align: center; cursor: pointer; }
+        .store-item i { font-size: 30px; color: var(--p); margin-bottom: 15px; display: block; }
+        .store-item h3 { font-size: 13px; margin: 0; }
+
+        .station-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 2000; overflow-y: auto; padding: 20px; }
+        .station-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        
+        input, textarea { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; }
+        .action-btn { width: 100%; padding: 18px; background: var(--p); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+
+        #chat-results { height: 300px; overflow-y: auto; background: #000; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #222; font-size: 13px; line-height: 1.6; }
+        .ai-label { color: var(--accent); font-weight: bold; }
+        .me-label { color: var(--p); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="main-header">
+        <div class="logo">DVARY_STORE_GPT</div>
+    </div>
+
+    <div class="store-grid">
+        <div class="store-item" onclick="openStation('ai')">
+            <i class="fas fa-brain"></i>
+            <h3>GPT-4 CHAT HUB</h3>
+        </div>
+        <div class="store-item" onclick="openStation('video')">
+            <i class="fas fa-video"></i>
+            <h3>VIDEO SNIPER</h3>
+        </div>
+        </div>
+
+    <div id="station-box" class="station-overlay">
+        <div class="station-header">
+            <h2 id="station-title" style="margin:0; color: var(--p);">STATION</h2>
+            <i class="fas fa-times" onclick="closeStation()" style="font-size: 24px; cursor: pointer;"></i>
+        </div>
+        <div id="station-content"></div>
+    </div>
+
+    <script>
+        // HIYO KEY YAKO MPYA YA OPENAI
+        const OPENAI_KEY = "Sk-proj-JhYo8k9ti62DthZud3HSqwiI4L_7DZqZD8QijcNVuWQ0FcuNeQjef9Iyb_2rOgb7rrbMVt4TmKT3BlbkFJoVWjn47SD0MOw_05TK6iL4VKo94r5EQALN5HO8ION3MpNsQ6M8POBs_uUIGcTGx-OzYYjcUf4A";
+
+        function openStation(id) {
+            const box = document.getElementById('station-box');
+            const title = document.getElementById('station-title');
+            const content = document.getElementById('station-content');
+            box.style.display = 'block';
+
+            if(id === 'ai') {
+                title.innerText = "GPT-4 AI HUB";
+                content.innerHTML = `
+                    <div id="chat-results">Dvary AI: Mifumo ya GPT ipo tayari...</div>
+                    <textarea id="ai-input" placeholder="Uliza chochote kitalaamu..."></textarea>
+                    <button class="action-btn" id="send-btn" onclick="callGPT()">SNIPE RESPONSE</button>
+                `;
+            } else if(id === 'video') {
+                title.innerText = "VIDEO SNIPER";
+                content.innerHTML = `<input type="text" placeholder="Paste Link..."><button class="action-btn">DOWNLOAD HD</button>`;
+            }
+        }
+
+        function closeStation() { document.getElementById('station-box').style.display = 'none'; }
+
+        // --- OPENAI LOGIC (CHAKACHUA GPT) ---
+        async function callGPT() {
+            const inp = document.getElementById('ai-input');
+            const res = document.getElementById('chat-results');
+            const btn = document.getElementById('send-btn');
+            
+            if(!inp.value) return;
+            
+            const prompt = inp.value;
+            res.innerHTML += `<br><span class="me-label">Agent Elia:</span> ${prompt}`;
+            inp.value = "";
+            btn.innerText = "THINKING...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_KEY.trim()}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo", // Unaweza kubadili iwe gpt-4 ukihitaji
+                        messages: [{ role: "user", content: prompt }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if(data.error) {
+                    res.innerHTML += `<br><span style="color:red">Error:</span> ${data.error.message}`;
+                } else {
+                    const aiText = data.choices[0].message.content;
+                    res.innerHTML += `<br><span class="ai-label">Dvary GPT:</span> ${aiText}`;
+                }
+                
+            } catch(e) {
+                res.innerHTML += `<br><span style="color:red">System Error:</span> Mtandao unazingua!`;
+            }
+            
+            btn.innerText = "SNIPE RESPONSE";
+            btn.disabled = false;
+            res.scrollTop = res.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
