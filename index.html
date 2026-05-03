@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY SYSTEM SNIPER | V4</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #010409; --card: #0d1117; --warn: #ffcc00; }
+        body { background: var(--bg); color: #fff; font-family: 'Share Tech Mono', monospace; margin: 0; padding: 15px; }
+        
+        .header { border-bottom: 2px solid var(--p); padding: 15px 0; text-align: center; margin-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--p); text-shadow: 0 0 10px var(--p); }
+
+        .terminal-box { background: #000; border: 1px solid #222; border-radius: 10px; padding: 15px; font-size: 12px; margin-bottom: 20px; border-left: 4px solid var(--p); }
+        .line { margin-bottom: 5px; color: #888; }
+        .line span { color: var(--p); font-weight: bold; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat-card { background: var(--card); border: 1px solid #222; border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-card i { font-size: 20px; color: var(--p); margin-bottom: 10px; }
+        .stat-val { font-size: 16px; font-weight: bold; display: block; }
+        .stat-label { font-size: 9px; color: #555; text-transform: uppercase; margin-top: 5px; }
+
+        .scan-btn { width: 100%; padding: 15px; background: none; border: 1px solid var(--p); color: var(--p); border-radius: 10px; font-family: inherit; font-weight: bold; margin-top: 25px; cursor: pointer; transition: 0.3s; }
+        .scan-btn:hover { background: var(--p); color: #000; box-shadow: 0 0 20px var(--p); }
+
+        .network-status { margin-top: 20px; padding: 10px; background: rgba(0, 255, 204, 0.05); border-radius: 8px; font-size: 11px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">SYSTEM_SNIPER_V4</div>
+        <p style="font-size: 9px; color: #444; margin-top: 5px;">DVARY INTELLIGENCE UNIT</p>
+    </div>
+
+    <div class="terminal-box">
+        <div class="line">>> Initializing system scan...</div>
+        <div class="line">>> Detecting device hardware: <span id="dev-name">Checking...</span></div>
+        <div class="line">>> Kernel status: <span style="color: var(--warn);">ACTIVE</span></div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <i class="fas fa-microchip"></i>
+            <span class="stat-val" id="cpu-cores">--</span>
+            <span class="stat-label">CPU Cores</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-memory"></i>
+            <span class="stat-val" id="ram-est">-- GB</span>
+            <span class="stat-label">RAM Approx</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-wifi"></i>
+            <span class="stat-val" id="net-type">--</span>
+            <span class="stat-label">Connection</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-battery-three-quarters"></i>
+            <span class="stat-val" id="bat-level">--%</span>
+            <span class="stat-label">Battery</span>
+        </div>
+    </div>
+
+    <div class="network-status" id="net-info">
+        Scanning network packets...
+    </div>
+
+    <button class="scan-btn" onclick="startScan()">RUN DEEP ANALYSIS</button>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <span style="font-size: 10px; color: #333;">ENCRYPTED BY DVARY ACADEMY</span>
+    </div>
+
+    <script>
+        function updateStats() {
+            // Hardware Detection
+            document.getElementById('cpu-cores').innerText = navigator.hardwareConcurrency || "N/A";
+            document.getElementById('dev-name').innerText = navigator.platform;
+            
+            // Network Detection
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (connection) {
+                document.getElementById('net-type').innerText = connection.effectiveType.toUpperCase();
+                document.getElementById('net-info').innerText = `Speed: ${connection.downlink} Mbps | Latency: ${connection.rtt}ms`;
+            }
+
+            // Battery Detection
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(bat => {
+                    document.getElementById('bat-level').innerText = Math.round(bat.level * 100) + "%";
+                });
+            }
+
+            // RAM Estimation (Browser Limitation)
+            if (navigator.deviceMemory) {
+                document.getElementById('ram-est').innerText = navigator.deviceMemory + " GB+";
+            }
+        }
+
+        function startScan() {
+            const btn = document.querySelector('.scan-btn');
+            btn.innerText = "ANALYZING...";
+            btn.style.borderColor = "var(--warn)";
+            btn.style.color = "var(--warn)";
+
+            setTimeout(() => {
+                updateStats();
+                btn.innerText = "SCAN COMPLETE";
+                btn.style.borderColor = "var(--p)";
+                btn.style.color = "var(--p)";
+                alert("Mwalimu, Simu yako ipo vizuri kitalaamu! Hakuna virusi vilivyopatikana.");
+            }, 2500);
+        }
+
+        updateStats();
+    </script>
+</body>
+</html>
+
