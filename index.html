@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY AI HUB | 100 AGENTS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #010409; --card: #0d1117; --msg: #161b22; --ai: #8a2be2; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        #reg-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .reg-box { background: var(--card); border: 2px solid var(--p); padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+        .btn-start { background: var(--p); color: #000; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .header { background: #000; padding: 15px; border-bottom: 2px solid var(--p); display: flex; justify-content: space-between; }
+        #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .bubble { max-width: 85%; padding: 10px 15px; border-radius: 15px; background: var(--msg); font-size: 13px; border: 1px solid #222; align-self: flex-start; word-wrap: break-word; }
+        .bubble.me { align-self: flex-end; border-color: var(--p); background: #002211; }
+        .bubble.ai-msg { align-self: center; border-color: var(--ai); background: #1a0033; width: 90%; color: #e0b0ff; }
+        .u-name { font-size: 10px; color: var(--p); font-weight: bold; display: block; margin-bottom: 3px; }
+        .input-area { background: #000; padding: 12px; display: flex; gap: 8px; border-top: 1px solid #222; }
+        .btn-send { background: var(--p); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="reg-screen">
+        <div class="reg-box">
+            <h2 style="color: var(--p);">DVARY AI HUB</h2>
+            <input type="text" id="reg-name" placeholder="Jina lako la Kijasusi...">
+            <button class="btn-start" onclick="startApp()">INGIA NETWORK</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <span style="color: var(--p); font-weight: 900;">DVARY_AI_NET v2.1</span>
+        <i class="fas fa-robot" style="color: var(--ai);"></i>
+    </div>
+
+    <div id="chat-container"></div>
+
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Anza na 'AI' kumuuliza Dvary AI...">
+        <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyCZRL7riGzC7JlGsoH2-X2waafCp5mTZkI";
+        const NTFY_TOPIC = "dvary_ai_network_2026"; 
+        let currentUser = "Agent";
+
+        function startApp() {
+            const name = document.getElementById('reg-name').value.trim();
+            if(!name) return alert("Weka jina!");
+            currentUser = name;
+            document.getElementById('reg-screen').style.display = 'none';
+            loadCache();
+            subscribe();
+        }
+
+        async function loadCache() {
+            try {
+                const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}/json?poll=1&cache=1`);
+                const data = await res.text();
+                data.split('\n').filter(l => l.trim()).forEach(l => {
+                    const m = JSON.parse(l);
+                    if(m.message) appendMessage(m.message);
+                });
+            } catch(e) {}
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            // Tuma meseji yako kwanza
+            await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `${currentUser}::${text}` });
+            input.value = "";
+
+            // Kama ina neno AI, piga Gemini kitalaamu
+            if(text.toUpperCase().startsWith("AI")) {
+                askAI(text.substring(2).trim());
+            }
+        }
+
+        async function askAI(prompt) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `DVARY_AI::${aiText}` });
+                } else {
+                    console.error("AI Error:", data);
+                    await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `DVARY_AI::Mwalimu, kuna hitilafu kwenye mfumo wa AI. Jaribu tena.` });
+                }
+            } catch(e) {
+                console.error("Fetch Error:", e);
+            }
+        }
+
+        function subscribe() {
+            const es = new EventSource(`https://ntfy.sh/${NTFY_TOPIC}/sse`);
+            es.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                appendMessage(data.message);
+            };
+        }
+
+        function appendMessage(text) {
+            const container = document.getElementById('chat-container');
+            const parts = text.split('::');
+            const name = parts[0];
+            const content = parts.slice(1).join('::');
+            if(!content) return;
+
+            const bubble = document.createElement('div');
+            const isMe = name === currentUser;
+            const isAI = name === "DVARY_AI";
+
+            bubble.className = `bubble ${isMe ? 'me' : ''} ${isAI ? 'ai-msg' : ''}`;
+            bubble.innerHTML = `<span class="u-name">${name}</span> ${content}`;
+            
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
