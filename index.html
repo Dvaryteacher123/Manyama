@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY AI HUB | POWERED</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #00ffcc; --bg: #010409; --card: #0d1117; --msg: #161b22; --ai: #8a2be2; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        #registration-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .reg-box { background: var(--card); border: 2px solid var(--p); padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
+        .btn-start { background: var(--p); color: #000; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+
+        .header { background: #000; padding: 15px; border-bottom: 2px solid var(--p); display: flex; justify-content: space-between; align-items: center; }
+        #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .bubble { max-width: 85%; padding: 10px 15px; border-radius: 18px; background: var(--msg); font-size: 13px; border: 1px solid #222; align-self: flex-start; }
+        .bubble.me { align-self: flex-end; border-color: var(--p); background: #002211; }
+        .bubble.ai-msg { align-self: center; border-color: var(--ai); background: #1a0033; color: #e0b0ff; width: 90%; }
+        
+        .u-name { font-size: 10px; color: var(--p); font-weight: bold; display: block; margin-bottom: 3px; }
+        .input-area { background: #000; padding: 12px; display: flex; gap: 8px; border-top: 1px solid #222; }
+        .btn-send { background: var(--p); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="registration-screen">
+        <div class="reg-box">
+            <h2 style="color: var(--p);">DVARY AI HUB</h2>
+            <p style="font-size: 11px; color: #888; margin-bottom: 20px;">Weka Jina kuingia kwenye Network</p>
+            <input type="text" id="reg-name" placeholder="Jina lako (Agent)">
+            <button class="btn-start" onclick="startApp()">ANZISHA MIFUMO</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <span style="color: var(--p); font-weight: bold;">DVARY AI NET (100)</span>
+        <i class="fas fa-robot" style="color: var(--ai);"></i>
+    </div>
+
+    <div id="chat-container"></div>
+
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Anza na 'AI' kumuuliza Dvary AI...">
+        <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyCZRL7riGzC7JlGsoH2-X2waafCp5mTZkI"; // Key yako ya ujasusi
+        const NTFY_TOPIC = "dvary_ai_network_2026";
+        let currentUser = "Agent";
+
+        function startApp() {
+            const name = document.getElementById('reg-name').value;
+            if(!name) return alert("Weka jina Kamanda!");
+            currentUser = name;
+            document.getElementById('registration-screen').style.display = 'none';
+            subscribe();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value;
+            if(!text) return;
+
+            // Tuma meseji kwa Agents wengine
+            await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `${currentUser}::${text}` });
+            input.value = "";
+
+            // Kama meseji inaanza na AI, muulize Gemini
+            if(text.toUpperCase().startsWith("AI")) {
+                getAIResponse(text.substring(2).trim());
+            }
+        }
+
+        async function getAIResponse(prompt) {
+            appendMessage("DVARY_AI::Changanuzi zinaendelea...", true);
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await res.json();
+                const aiText = data.candidates[0].content.parts[0].text;
+                await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, { method: 'POST', body: `DVARY_AI::${aiText}` });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function subscribe() {
+            const es = new EventSource(`https://ntfy.sh/${NTFY_TOPIC}/sse`);
+            es.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                appendMessage(data.message);
+            };
+        }
+
+        function appendMessage(text, isTemp = false) {
+            const container = document.getElementById('chat-container');
+            const [name, content] = text.split('::');
+            if(!content) return;
+
+            const bubble = document.createElement('div');
+            const isAI = name === "DVARY_AI";
+            const isMe = name === currentUser;
+
+            bubble.className = `bubble ${isMe ? 'me' : ''} ${isAI ? 'ai-msg' : ''}`;
+            bubble.innerHTML = `<span class="u-name">${name}</span> ${content}`;
+            
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
