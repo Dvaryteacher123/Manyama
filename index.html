@@ -1,0 +1,63 @@
+<div class="service-card" onclick="showStation('image-ai')">
+    <i class="fas fa-magic"></i>
+    <span>AI Image Magic</span>
+</div>
+
+if(id === 'image-ai') {
+    title.innerText = "Dvary AI Image Magic";
+    content.innerHTML = `
+        <div style="text-align:center; padding: 10px;">
+            <p style="font-size:12px; color:#666;">Geuza picha yako kuwa Katuni au 3D kitalaamu!</p>
+            
+            <div class="input-group">
+                <label>PANDISHA PICHA</label>
+                <input type="file" id="image-input" accept="image/*" onchange="previewImg(event)">
+            </div>
+
+            <div id="preview-area" style="margin-bottom:15px; display:none;">
+                <img id="img-pre" src="#" style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </div>
+
+            <div class="input-group">
+                <label>CHAGUA STYLE</label>
+                <select id="edit-style">
+                    <option value="anime">Photo-to-Anime</option>
+                    <option value="pixar">Pixar 3D Style</option>
+                    <option value="realistic">Hyper-Realistic</option>
+                </select>
+            </div>
+
+            <button class="main-btn" id="magic-btn" onclick="startMagic()">ANZA UCHAWI</button>
+            
+            <div id="magic-result" style="margin-top:20px; display:none;">
+                <p style="font-size:11px; color:var(--primary);">MATOKEO YA KIJASUSI:</p>
+                <img id="final-img" src="" style="width:100%; border-radius:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                <button class="main-btn" style="margin-top:10px; background:#222;" onclick="downloadMagic()">PAKUA PICHA</button>
+            </div>
+        </div>
+    `;
+}
+
+// --- LOGIC YA KUCHAKATA ---
+function previewImg(event) {
+    const pre = document.getElementById('img-pre');
+    pre.src = URL.createObjectURL(event.target.files[0]);
+    document.getElementById('preview-area').style.display = 'block';
+}
+
+async function startMagic() {
+    const btn = document.getElementById('magic-btn');
+    btn.innerText = "UCHAWI UNAENDELEA...";
+    btn.disabled = true;
+
+    // HAPA: Kitalaamu tunatakiwa kuita API kama Replicate.com
+    // Kwa sasa, nitakuonyesha simulation ya matokeo
+    setTimeout(() => {
+        document.getElementById('magic-result').style.display = 'block';
+        document.getElementById('final-img').src = document.getElementById('img-pre').src; // Hapa itakuja URL ya AI
+        btn.innerText = "TAYARI!";
+        btn.disabled = false;
+        alert("Mwalimu, picha yako imechakatwa kitalaamu!");
+    }, 3000);
+}
+
