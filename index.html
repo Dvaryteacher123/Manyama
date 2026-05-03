@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY STORE | STOO YA KIJASUSI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0066ff; --bg: #f4f7fa; --card: #ffffff; }
+        body { background: var(--bg); color: #333; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        .header { background: #fff; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .service-card { background: var(--card); border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #eee; cursor: pointer; }
+        .service-card i { font-size: 28px; color: var(--primary); margin-bottom: 10px; display: block; }
+        
+        /* Overlay Style */
+        .overlay { display: none; position: fixed; inset: 0; background: #fff; z-index: 2000; padding: 20px; }
+        .input-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .main-btn { width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        #chat-results { height: 300px; overflow-y: auto; background: #f0f2f5; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="margin:0; font-size:18px; color:var(--primary)">DVARY MEGA STORE</h1>
+    </div>
+
+    <div class="grid-container">
+        <div class="service-card" onclick="openStation('ai')">
+            <i class="fas fa-robot"></i>
+            <span>Dvary AI Chat</span>
+        </div>
+        <div class="service-card" onclick="openStation('video')">
+            <i class="fas fa-download"></i>
+            <span>Video Sniper</span>
+        </div>
+        </div>
+
+    <div id="station-overlay" class="overlay">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h2 id="station-title" style="margin:0; font-size:18px;">STATION</h2>
+            <i class="fas fa-times" onclick="closeStation()" style="font-size:20px; cursor:pointer;"></i>
+        </div>
+        <div id="station-content"></div>
+    </div>
+
+    <script>
+        // TUMIA GEMINI KEY - HII HAIGOMI KWENYE BROWSER
+        const GEMINI_KEY = "AIzaSyCZRL7riGzC7JlGsoH2-X2waafCp5mTZkI";
+
+        function openStation(id) {
+            const overlay = document.getElementById('station-overlay');
+            const title = document.getElementById('station-title');
+            const content = document.getElementById('station-content');
+            overlay.style.display = 'block';
+
+            if(id === 'ai') {
+                title.innerText = "Dvary AI Hub";
+                content.innerHTML = `
+                    <div id="chat-results">Dvary AI: Habari Agent Elia! Niulize chochote...</div>
+                    <textarea id="ai-input" placeholder="Andika ujumbe wako hapa..."></textarea>
+                    <button class="main-btn" onclick="askGemini()">TUMA SWALI</button>
+                `;
+            } else if(id === 'video') {
+                title.innerText = "Video Sniper";
+                content.innerHTML = `<input type="text" placeholder="Weka Link hapa..."><button class="main-btn">PAKUA VIDEO</button>`;
+            }
+        }
+
+        async function askGemini() {
+            const input = document.getElementById('ai-input');
+            const results = document.getElementById('chat-results');
+            if(!input.value) return;
+
+            const userText = input.value;
+            results.innerHTML += `<div style="margin-top:10px;"><b>Wewe:</b> ${userText}</div>`;
+            input.value = "";
+            results.scrollTop = results.scrollHeight;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userText }] }]
+                    })
+                });
+
+                const data = await response.json();
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                results.innerHTML += `<div style="margin-top:10px; color:var(--primary)"><b>Dvary AI:</b> ${aiResponse}</div>`;
+                results.scrollTop = results.scrollHeight;
+            } catch(e) {
+                results.innerHTML += `<div style="color:red; margin-top:10px;">Kosa: Network au Key imegoma!</div>`;
+            }
+        }
+
+        function closeStation() { document.getElementById('station-overlay').style.display = 'none'; }
+    </script>
+</body>
+</html>
+
