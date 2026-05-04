@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALCULATOR VAULT</title>
+    <style>
+        :root { --main: #000; --accent: #4CAF50; --btn: #333; }
+        body { background: #111; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        
+        /* CALCULATOR UI */
+        .calc-box { width: 320px; background: var(--main); padding: 25px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        #status { color: var(--accent); font-size: 12px; text-align: center; height: 20px; margin-bottom: 5px; font-weight: bold; }
+        #display { width: 100%; height: 70px; background: transparent; border: none; color: #fff; text-align: right; font-size: 45px; margin-bottom: 20px; outline: none; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .btn { height: 65px; border-radius: 50%; border: none; font-size: 22px; font-weight: bold; cursor: pointer; color: #fff; transition: 0.2s; }
+        .btn-num { background: var(--btn); }
+        .btn-op { background: #444; color: var(--accent); }
+        .btn-equal { background: var(--accent); color: #fff; }
+        .btn:active { transform: scale(0.9); }
+
+        /* VAULT UI (SECRET) */
+        #vault { display: none; position: fixed; inset: 0; background: #fff; z-index: 1000; padding: 20px; overflow-y: auto; }
+        .v-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .media-grid img, .media-grid video { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .add-btn { position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: #fff; width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="calc-box" id="calc-ui">
+        <div id="status"></div>
+        <input type="text" id="display" placeholder="0" readonly>
+        <div class="buttons">
+            <button class="btn btn-op" onclick="clearCalc()">AC</button>
+            <button class="btn btn-op">+/-</button>
+            <button class="btn btn-op">%</button>
+            <button class="btn btn-op">÷</button>
+            
+            <button class="btn btn-num" onclick="press('7')">7</button>
+            <button class="btn btn-num" onclick="press('8')">8</button>
+            <button class="btn btn-num" onclick="press('9')">9</button>
+            <button class="btn btn-op">×</button>
+            
+            <button class="btn btn-num" onclick="press('4')">4</button>
+            <button class="btn btn-num" onclick="press('5')">5</button>
+            <button class="btn btn-num" onclick="press('6')">6</button>
+            <button class="btn btn-op">-</button>
+            
+            <button class="btn btn-num" onclick="press('1')">1</button>
+            <button class="btn btn-num" onclick="press('2')">2</button>
+            <button class="btn btn-num" onclick="press('3')">3</button>
+            <button class="btn btn-op">+</button>
+            
+            <button class="btn btn-num" style="grid-column: span 2; border-radius:35px;" onclick="press('0')">0</button>
+            <button class="btn btn-num">.</button>
+            <button class="btn btn-equal" onclick="handleLogic()">=</button>
+        </div>
+    </div>
+
+    <div id="vault">
+        <div class="v-header">
+            <h2 style="margin:0; color:#333;">Siri ya Stoo</h2>
+            <button onclick="location.reload()" style="background:#555; color:#fff; border:none; padding:8px 15px; border-radius:20px;">Funga</button>
+        </div>
+        <div class="media-grid" id="gallery"></div>
+        <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="uploadFiles(event)">
+        <button class="add-btn" onclick="document.getElementById('file-input').click()">+</button>
+    </div>
+
+    <script>
+        let input = "";
+        let tempPass = "";
+        let db;
+        let step = localStorage.getItem("vault_key") ? "login" : "init";
+        const statusEl = document.getElementById("status");
+
+        if(step === "init") statusEl.innerText = "WEKA PASSWORD YAKO (4-8 DIGITS)";
+
+        function press(num) {
+            input += num;
+            document.getElementById("display").value = input;
+        }
+
+        function clearCalc() {
+            input = "";
+            document.getElementById("display").value = "0";
+        }
+
+        function handleLogic() {
+            const savedKey = localStorage.getItem("vault_key");
+
+            if (step === "init") {
+                tempPass = input;
+                step = "confirm";
+                statusEl.innerText = "RUDIA TENA PASSWORD KU-CONFIRM";
+                clearCalc();
+            } else if (step === "confirm") {
+                if (input === tempPass) {
+                    localStorage.setItem("vault_key", input);
+                    alert("Ujasusi Umekamilika! Password Imewekwa.");
+                    location.reload();
+                } else {
+                    alert("Password Hazifanani! Anza Upya.");
+                    location.reload();
+                }
+            } else {
+                if (input === savedKey) {
+                    openVault();
+                } else {
+                    // Hapa inafanya kazi kama calculator ya kawaida (Mfano 1+1)
+                    try {
+                        let res = eval(input.replace('×', '*').replace('÷', '/'));
+                        document.getElementById("display").value = res;
+                        input = res.toString();
+                    } catch {
+                        clearCalc();
+                    }
+                }
+            }
+        }
+
+        // DATABASE KWA AJILI YA PICHA KUBWA
+        const request = indexedDB.open("VaultDB", 1);
+        request.onupgradeneeded = e => e.target.result.createObjectStore("files", {autoIncrement:true});
+        request.onsuccess = e => db = e.target.result;
+
+        function openVault() {
+            document.getElementById("calc-ui").style.display = "none";
+            document.getElementById("vault").style.display = "block";
+            loadGallery();
+        }
+
+        function uploadFiles(e) {
+            const files = e.target.files;
+            const tx = db.transaction("files", "readwrite");
+            const store = tx.objectStore("files");
+            for (let file of files) store.add(file);
+            tx.oncomplete = () => loadGallery();
+        }
+
+        function loadGallery() {
+            const gallery = document.getElementById("gallery");
+            gallery.innerHTML = "";
+            const tx = db.transaction("files", "readonly");
+            tx.objectStore("files").openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    const url = URL.createObjectURL(cursor.value);
+                    const tag = cursor.value.type.startsWith("video") ? "video" : "img";
+                    gallery.innerHTML += `<${tag} src="${url}" ${tag === 'video' ? 'controls' : ''}></${tag}>`;
+                    cursor.continue();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
+
