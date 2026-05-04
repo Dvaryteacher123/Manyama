@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Calculator + Video Saver</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+}
+
+input {
+    width: 90%;
+    padding: 15px;
+    font-size: 20px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 22%;
+    padding: 15px;
+    margin: 5px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #22c55e;
+    color: white;
+}
+
+.video-box {
+    margin-top: 20px;
+}
+
+video {
+    width: 100%;
+    margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📱 Calculator</h2>
+
+<input type="text" id="screen" readonly>
+
+<br>
+
+<button onclick="add('7')">7</button>
+<button onclick="add('8')">8</button>
+<button onclick="add('9')">9</button>
+<button onclick="add('/')">/</button>
+
+<br>
+
+<button onclick="add('4')">4</button>
+<button onclick="add('5')">5</button>
+<button onclick="add('6')">6</button>
+<button onclick="add('*')">*</button>
+
+<br>
+
+<button onclick="add('1')">1</button>
+<button onclick="add('2')">2</button>
+<button onclick="add('3')">3</button>
+<button onclick="add('-')">-</button>
+
+<br>
+
+<button onclick="add('0')">0</button>
+<button onclick="clearScreen()">C</button>
+<button onclick="calculate()">=</button>
+<button onclick="add('+')">+</button>
+
+<!-- VIDEO SECTION -->
+<div class="video-box">
+
+<h2>🎥 Upload Video</h2>
+
+<input type="file" id="videoInput" accept="video/*">
+
+<br><br>
+
+<button onclick="saveVideo()">Save Video</button>
+
+<video id="player" controls></video>
+
+</div>
+
+</div>
+
+<script>
+
+// CALCULATOR
+function add(value){
+    document.getElementById("screen").value += value;
+}
+
+function clearScreen(){
+    document.getElementById("screen").value = "";
+}
+
+function calculate(){
+    try{
+        document.getElementById("screen").value = eval(document.getElementById("screen").value);
+    }catch{
+        alert("Error");
+    }
+}
+
+// VIDEO SAVE
+function saveVideo(){
+    let file = document.getElementById("videoInput").files[0];
+
+    if(!file){
+        alert("Chagua video kwanza");
+        return;
+    }
+
+    let reader = new FileReader();
+
+    reader.onload = function(e){
+        localStorage.setItem("video", e.target.result);
+        document.getElementById("player").src = e.target.result;
+        alert("Video imehifadhiwa");
+    }
+
+    reader.readAsDataURL(file);
+}
+
+// LOAD VIDEO
+window.onload = function(){
+    let savedVideo = localStorage.getItem("video");
+
+    if(savedVideo){
+        document.getElementById("player").src = savedVideo;
+    }
+}
+
+</script>
+
+</body>
+</html>
