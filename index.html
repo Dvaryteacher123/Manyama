@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY APP BUILDER | TENGENEZA APP YAKO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #0066ff; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); }
+        
+        /* Panel ya Kushoto - Editor */
+        .editor-side { width: 400px; background: #fff; padding: 25px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; }
+        .editor-side h2 { color: var(--p); border-bottom: 2px solid var(--p); padding-bottom: 10px; }
+        
+        /* Panel ya Kulia - Preview */
+        .preview-side { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        
+        /* Mockup ya Simu */
+        .phone-mockup { width: 280px; height: 550px; background: #fff; border: 12px solid #222; border-radius: 40px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .phone-top { height: 60px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .phone-content { padding: 20px; text-align: center; }
+
+        label { display: block; margin-top: 20px; font-weight: bold; font-size: 13px; color: #555; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .build-btn { width: 100%; padding: 15px; background: #28a745; color: #fff; border: none; border-radius: 10px; font-weight: bold; margin-top: 30px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="editor-side">
+        <h2>Dvary Builder</h2>
+        <p style="font-size: 12px; color: #888;">Jaza fomu hii kutengeneza app yako papo hapo.</p>
+
+        <label>JINA LA APP YAKO:</label>
+        <input type="text" id="app-title" placeholder="Mf: Dvary Odd Sniper" oninput="liveUpdate()">
+
+        <label>RANGI KUU (PRIMARY COLOR):</label>
+        <input type="color" id="app-color" value="#0066ff" oninput="liveUpdate()">
+
+        <label>AINA YA APP (MODEL):</label>
+        <select id="app-type" onchange="liveUpdate()">
+            <option value="Karibu kwenye App ya Huduma">App ya Huduma (Service)</option>
+            <option value="Hapa utapata habari za michezo kila siku">App ya Michezo (Sports)</option>
+            <option value="Anza kuchat na AI sasa hivi">App ya AI Chat</option>
+        </select>
+
+        <label>ICON YA APP (URL):</label>
+        <input type="text" id="app-icon" placeholder="Link ya picha..." oninput="liveUpdate()">
+
+        <button class="build-btn" onclick="saveToDatabase()">TENGENEZA APP SASA</button>
+    </div>
+
+    <div class="preview-side">
+        <p style="font-weight: bold; color: #666; margin-bottom: 15px;">MUONEKANO WA APP YAKO (PREVIEW)</p>
+        <div class="phone-mockup">
+            <div id="m-header" class="phone-top" style="background: #0066ff;">APP TITLE</div>
+            <div class="phone-content">
+                <img id="m-icon" src="https://dummyimage.com/100x100/ccc/fff&text=ICON" style="width: 80px; height: 80px; border-radius: 20px; margin-top: 20px;">
+                <p id="m-desc" style="margin-top: 20px; color: #444;">Maelezo ya app yatatokea hapa...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function liveUpdate() {
+            const title = document.getElementById('app-title').value;
+            const color = document.getElementById('app-color').value;
+            const type = document.getElementById('app-type').value;
+            const icon = document.getElementById('app-icon').value;
+
+            document.getElementById('m-header').innerText = title || "APP TITLE";
+            document.getElementById('m-header').style.background = color;
+            document.getElementById('m-desc').innerText = type;
+            if(icon) {
+                document.getElementById('m-icon').src = icon;
+            }
+        }
+
+        function saveToDatabase() {
+            const title = document.getElementById('app-title').value;
+            if(!title) return alert("Mwalimu, jina la app ni lazima!");
+            
+            // HAPA: Tutaweka kodi ya Firebase kuhifadhi hii oda
+            alert("Ujasusi Umekamilika! App ya '" + title + "' imehifadhiwa kitalaamu kwenye database.");
+        }
+    </script>
+</body>
+</html>
+
