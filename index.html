@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY BUILDER | MULTI-LANGUAGE</title>
+    <style>
+        :root { --primary: #1a73e8; --bg: #f8f9fa; }
+        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); }
+        .sidebar { width: 350px; background: #fff; padding: 20px; border-right: 1px solid #ddd; overflow-y: auto; }
+        .preview { flex: 1; display: flex; align-items: center; justify-content: center; background: #e0e4e8; }
+        .phone { width: 260px; height: 520px; background: #fff; border: 10px solid #222; border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .p-header { height: 50px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn-green { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 style="color:var(--primary)">Dvary Builder</h2>
+        <label>JINA LA APP:</label>
+        <input type="text" id="appName" placeholder="Mf: Manyama App" oninput="liveUpdate()">
+        
+        <label>RANGI YA APP:</label>
+        <input type="color" id="appColor" value="#1a73e8" oninput="liveUpdate()">
+        
+        <label>KODI ZA HTML (SECTIONS):</label>
+        <textarea id="appHtml" placeholder="Weka kodi hapa..." oninput="liveUpdate()"></textarea>
+
+        <button class="btn-green" onclick="generateAndDownload()">TENGENEZA APP (EXPORT)</button>
+    </div>
+
+    <div class="preview">
+        <div class="phone">
+            <div id="p-head" class="p-header" style="background: #1a73e8;">APP NAME</div>
+            <iframe id="p-screen" style="flex:1; border:none; width:100%;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function liveUpdate() {
+            const name = document.getElementById('appName').value || "APP NAME";
+            const color = document.getElementById('appColor').value;
+            const html = document.getElementById('appHtml').value || "<h1>Karibu!</h1>";
+
+            document.getElementById('p-head').innerText = name;
+            document.getElementById('p-head').style.background = color;
+
+            const frame = document.getElementById('p-screen');
+            const doc = frame.contentDocument;
+            doc.open();
+            doc.write(`<style>body{font-family:sans-serif; padding:15px;}</style>${html}`);
+            doc.close();
+        }
+
+        // HII NDIO FUNCTION INAYOTOA FILE LA APP KWELI
+        function generateAndDownload() {
+            const name = document.getElementById('appName').value || "Dvary_App";
+            const color = document.getElementById('appColor').value;
+            const html = document.getElementById('appHtml').value || "<h1>App Ipo Tayari!</h1>";
+
+            // Hapa tunatengeneza muundo wa App itakavyokuwa ikifunguliwa
+            const finalAppCode = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name}</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; background: #f9f9f9; }
+        .header { background: ${color}; color: white; padding: 20px; text-align: center; font-weight: bold; }
+        .main { padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">${name.toUpperCase()}</div>
+    <div class="main">${html}</div>
+</body>
+</html>`;
+
+            // Kutengeneza file sasa (Uchawi wa Kitalaamu)
+            const blob = new Blob([finalAppCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name.replace(/\s+/g, '_') + ".html"; // File litapakuliwa hapa
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Badala ya Alert pekee, sasa file linashuka!
+            console.log("App has been generated and downloaded.");
+        }
+
+        liveUpdate();
+    </script>
+</body>
+</html>
+
