@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TikTok Preview</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+}
+
+input {
+    width: 90%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+}
+
+button {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    margin-top: 10px;
+}
+
+iframe {
+    margin-top: 20px;
+    width: 100%;
+    height: 500px;
+    border-radius: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📱 TikTok Video Viewer</h2>
+
+<input type="text" id="url" placeholder="Paste TikTok link hapa">
+<br>
+
+<button onclick="showVideo()">Show Video</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+function showVideo(){
+    let url = document.getElementById("url").value;
+
+    if(!url){
+        alert("Weka link kwanza");
+        return;
+    }
+
+    // Convert normal TikTok link to embed
+    let embedUrl = url.replace("tiktok.com/", "tiktok.com/embed/");
+
+    document.getElementById("result").innerHTML =
+    `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+}
+</script>
+
+</body>
+</html>
