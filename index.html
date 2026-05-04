@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALC VAULT PRO</title>
+    <style>
+        :root { --bg: #000; --btn: #333; --accent: #ff9500; }
+        body { background: #111; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .calc-box { width: 320px; background: var(--bg); padding: 20px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        #display { width: 100%; height: 80px; background: #000; border: none; color: #fff; text-align: right; font-size: 35px; margin-bottom: 20px; padding: 10px; box-sizing: border-box; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .btn { height: 65px; border-radius: 50%; border: none; font-size: 24px; font-weight: bold; cursor: pointer; color: #fff; }
+        .btn-num { background: var(--btn); }
+        .btn-op { background: var(--accent); }
+        .btn-zero { grid-column: span 2; border-radius: 35px; }
+        
+        /* VAULT AREA */
+        #vault { display: none; position: fixed; inset: 0; background: #fff; z-index: 1000; padding: 20px; overflow-y: auto; text-align: center; }
+        .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        video, img { width: 100%; border-radius: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+    <div class="calc-box" id="calc-ui">
+        <div id="status-text" style="color:#ff9500; font-size:10px; text-align:center; margin-bottom:5px;"></div>
+        <input type="text" id="display" placeholder="0" readonly>
+        <div class="buttons">
+            <button class="btn" style="background:#a5a5a5; color:#000;" onclick="clearAll()">AC</button>
+            <button class="btn" style="background:#a5a5a5; color:#000;">+/-</button>
+            <button class="btn" style="background:#a5a5a5; color:#000;">%</button>
+            <button class="btn btn-op">÷</button>
+            <button class="btn btn-num" onclick="press('7')">7</button>
+            <button class="btn btn-num" onclick="press('8')">8</button>
+            <button class="btn btn-num" onclick="press('9')">9</button>
+            <button class="btn btn-op">×</button>
+            <button class="btn btn-num" onclick="press('4')">4</button>
+            <button class="btn btn-num" onclick="press('5')">5</button>
+            <button class="btn btn-num" onclick="press('6')">6</button>
+            <button class="btn btn-op">−</button>
+            <button class="btn btn-num" onclick="press('1')">1</button>
+            <button class="btn btn-num" onclick="press('2')">2</button>
+            <button class="btn btn-num" onclick="press('3')">3</button>
+            <button class="btn btn-op">+</button>
+            <button class="btn btn-num btn-zero" onclick="press('0')">0</button>
+            <button class="btn btn-num">.</button>
+            <button class="btn btn-op" onclick="handleEqual()">=</button>
+        </div>
+    </div>
+
+    <div id="vault">
+        <h2 style="color:#ff9500;">Dvary Vault</h2>
+        <button onclick="location.reload()" style="background:red; color:white; border:none; padding:10px; border-radius:5px;">LOCK VAULT</button>
+        <hr>
+        <input type="file" id="media-file" accept="video/*,image/*" style="display:none;" onchange="saveToVault(event)">
+        <button onclick="document.getElementById('media-file').click()" style="width:100%; padding:15px; background:#1e8e3e; color:white; border:none; border-radius:10px; font-weight:bold;">+ WEKA VIDEO/PICHA</button>
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <script>
+        let input = "";
+        let tempPass = "";
+        let step = localStorage.getItem("vault_pass") ? "login" : "setup";
+
+        const status = document.getElementById('status-text');
+        if(step === "setup") status.innerText = "SET PASSWORD (4 DIGITS) & PRESS =";
+
+        function press(n) {
+            input += n;
+            document.getElementById('display').value = input;
+        }
+
+        function clearAll() {
+            input = "";
+            document.getElementById('display').value = "0";
+        }
+
+        function handleEqual() {
+            const savedPass = localStorage.getItem("vault_pass");
+
+            if (step === "setup") {
+                tempPass = input;
+                step = "confirm";
+                status.innerText = "CONFIRM PASSWORD & PRESS =";
+                clearAll();
+            } else if (step === "confirm") {
+                if (input === tempPass) {
+                    localStorage.setItem("vault_pass", input);
+                    alert("Password Imewekwa Kitalaamu!");
+                    location.reload();
+                } else {
+                    alert("Password Hazifanani! Anza upya.");
+                    location.reload();
+                }
+            } else if (step === "login") {
+                if (input === savedPass) {
+                    openVault();
+                } else {
+                    alert("Hesabu imekataa! (Password siyo)");
+                    clearAll();
+                }
+            }
+        }
+
+        function openVault() {
+            document.getElementById('calc-ui').style.display = 'none';
+            document.getElementById('vault').style.display = 'block';
+            loadMedia();
+        }
+
+        function saveToVault(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                let data = JSON.parse(localStorage.getItem('my_files') || '[]');
+                data.push({type: file.type, src: event.target.result});
+                localStorage.setItem('my_files', JSON.stringify(data));
+                loadMedia();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadMedia() {
+            const div = document.getElementById('gallery');
+            div.innerHTML = "";
+            let data = JSON.parse(localStorage.getItem('my_files') || '[]');
+            data.forEach(item => {
+                if(item.type.includes('video')) div.innerHTML += `<video src="${item.src}" controls></video>`;
+                else div.innerHTML += `<img src="${item.src}">`;
+            });
+        }
+    </script>
+</body>
+</html>
+
