@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Jimmy Chat MAX</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#0b141a; color:white; }
+#login { display:flex; height:100vh; justify-content:center; align-items:center; flex-direction:column; }
+#chatPage { display:none; }
+
+input, button { padding:10px; border:none; border-radius:20px; margin:5px; }
+
+.chat { height:55vh; overflow-y:auto; padding:10px; }
+.msg { margin:5px; padding:10px; border-radius:10px; }
+.me { background:#005c4b; }
+.other { background:#202c33; }
+</style>
+</head>
+
+<body>
+
+<div id="login">
+  <input id="name" placeholder="Name">
+  <button onclick="login()">Enter</button>
+</div>
+
+<div id="chatPage">
+  <div id="chat" class="chat"></div>
+
+  <input id="msg" placeholder="Message">
+  <button onclick="send()">Send</button>
+
+  <input type="file" id="file">
+  <button onclick="upload()">Send File</button>
+
+  <button onclick="record()">🎤 Record</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let myName = "";
+
+// LOGIN
+function login(){
+  myName = document.getElementById("name").value;
+  document.getElementById("login").style.display="none";
+  document.getElementById("chatPage").style.display="block";
+  socket.emit("login", myName);
+}
+
+// ADD MSG
+function add(msg, me=false){
+  let d = document.createElement("div");
+  d.className = "msg " + (me ? "me":"other");
+  d.innerHTML = msg;
+  document.getElementById("chat").appendChild(d);
+}
+
+// SEND TEXT
+function send(){
+  let text = document.getElementById("msg").value;
+  socket.emit("chat",{user:myName,text});
+  add(myName+": "+text,true);
+}
+
+// RECEIVE
+socket.on("chat",(d)=>{
+  add(d.user+": "+d.text);
+});
+
+// FILE UPLOAD
+async function upload(){
+  let f = document.getElementById("file").files[0];
+  let fd = new FormData();
+  fd.append("file",f);
+
+  let res = await fetch("/upload",{method:"POST",body:fd});
+  let data = await res.json();
+
+  let url = data.url;
+  socket.emit("chat",{user:myName,text:"<a href='"+url+"' target='_blank'>📎 File</a>"});
+}
+
+// 🎤 VOICE
+let mediaRecorder;
+function record(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    mediaRecorder = new MediaRecorder(stream);
+    let chunks=[];
+
+    mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+
+    mediaRecorder.onstop=()=>{
+      let blob=new Blob(chunks);
+      let url=URL.createObjectURL(blob);
+      add("<audio controls src='"+url+"'></audio>",true);
+    };
+
+    mediaRecorder.start();
+    setTimeout(()=>mediaRecorder.stop(),3000);
+  });
+}
+</script>
+
+</body>
+</html>
