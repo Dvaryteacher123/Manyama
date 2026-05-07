@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY LINK GENERATOR | 🌸</title>
+    <style>
+        :root { --green: #25D366; --dark: #075E54; --light: #dcf8c6; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #e5ddd5; 
+            margin: 0; 
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+        }
+        .container { 
+            background: white; padding: 30px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 90%; max-width: 420px; 
+            text-align: center; border-bottom: 8px solid var(--green);
+        }
+        .logo { font-size: 50px; margin-bottom: 10px; }
+        h2 { color: var(--dark); margin: 0; letter-spacing: 1px; }
+        .upload-area { 
+            border: 2px dashed #bbb; padding: 30px; border-radius: 15px; 
+            margin: 20px 0; cursor: pointer; transition: 0.3s; background: #fafafa;
+        }
+        .upload-area:hover { border-color: var(--green); background: #f0fff0; }
+        input[type="file"] { display: none; }
+        .btn { 
+            background: var(--green); color: white; border: none; 
+            padding: 15px 20px; border-radius: 10px; width: 100%; 
+            font-weight: bold; cursor: pointer; font-size: 16px;
+        }
+        .btn:disabled { background: #ccc; }
+        #loader { display: none; margin-top: 15px; color: var(--dark); font-weight: bold; }
+        .result-box { 
+            display: none; margin-top: 25px; padding: 15px; 
+            background: var(--light); border-radius: 10px; border: 1px solid #c3e6cb;
+        }
+        .url-display { 
+            background: white; padding: 10px; border-radius: 5px; 
+            word-break: break-all; font-size: 13px; color: blue; 
+            margin-bottom: 10px; border: 1px solid #ddd; display: block;
+        }
+        .copy-btn { background: var(--dark); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">🌸</div>
+    <h2>DVARY LINK GEN</h2>
+    <p style="color: #666; font-size: 14px;">Pakia Picha au Video upate URL ya kudumu 🚀</p>
+
+    <div class="upload-area" onclick="document.getElementById('picha-video').click()">
+        <span id="file-name">Gusa hapa kuchagua faili...</span>
+        <input type="file" id="picha-video" onchange="onyeshaJina()">
+    </div>
+
+    <button class="btn" id="upload-btn" onclick="anzaKupandisha()">TENGENEZA URL (SUBMIT)</button>
+
+    <div id="loader">Inatengeneza Link... ⏳</div>
+
+    <div class="result-box" id="result-box">
+        <strong style="color: var(--dark); font-size: 14px;">LINK YAKO TAYARI:</strong>
+        <span class="url-display" id="final-url"></span>
+        <button class="copy-btn" onclick="nakiliLink()">COPY URL</button>
+    </div>
+</div>
+
+<script>
+    function onyeshaJina() {
+        const file = document.getElementById('picha-video').files[0];
+        if(file) document.getElementById('file-name').innerText = "Tayari: " + file.name;
+    }
+
+    async function anzaKupandisha() {
+        const fileInput = document.getElementById('picha-video');
+        const file = fileInput.files[0];
+        if(!file) return alert("Mwalimu, chagua faili kwanza!");
+
+        const btn = document.getElementById('upload-btn');
+        const loader = document.getElementById('loader');
+        const resultBox = document.getElementById('result-box');
+        const finalUrl = document.getElementById('final-url');
+
+        btn.disabled = true;
+        loader.style.display = 'block';
+        resultBox.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'dvary_preset'); // Ile preset uliyosave
+
+        try {
+            // Imetumia Cloud Name yako: dvbftux6w
+            const response = await fetch('https://api.cloudinary.com/v1_1/dvbftux6w/auto/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if(data.secure_url) {
+                finalUrl.innerText = data.secure_url;
+                resultBox.style.display = 'block';
+            } else {
+                alert("Hitilafu! Hakikisha uliweka 'Unsigned' kule Cloudinary.");
+            }
+        } catch (err) {
+            alert("Internet imekataa ujasusi!");
+        } finally {
+            btn.disabled = false;
+            loader.style.display = 'none';
+        }
+    }
+
+    function nakiliLink() {
+        const url = document.getElementById('final-url').innerText;
+        navigator.clipboard.writeText(url);
+        alert("URL Imenakiliwa! 🌸");
+    }
+</script>
+
+</body>
+</html>
