@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY LINK PRO | 🌸</title>
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <style>
+        :root { --green: #25D366; --dark: #075E54; --light: #dcf8c6; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e5ddd5; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
+        .container { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; border-bottom: 8px solid var(--green); margin: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; cursor: pointer; border-radius: 10px; background: #eee; font-weight: bold; font-size: 14px; }
+        .active-tab { background: var(--green); color: white; }
+        textarea { width: 100%; height: 100px; border-radius: 10px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 10px; }
+        .btn { background: var(--green); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .result-box { display: none; margin-top: 20px; padding: 15px; background: var(--light); border-radius: 10px; word-break: break-all; }
+        #view-text-area { display: none; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-ui">
+    <div style="font-size: 40px;">🌸</div>
+    <h2 style="color: var(--dark);">DVARY LINK PRO</h2>
+    
+    <div class="tabs">
+        <div id="tab1" class="tab active-tab" onclick="switchTab(1)">PICHA/VIDEO</div>
+        <div id="tab2" class="tab" onclick="switchTab(2)">MAANDISHI</div>
+    </div>
+
+    <div id="picha-section">
+        <input type="file" id="file-input" style="margin-bottom: 15px;">
+        <button class="btn" onclick="uploadCloudinary()">TENGENEZA LINK YA FILE</button>
+    </div>
+
+    <div id="maandishi-section" style="display:none;">
+        <textarea id="text-input" placeholder="Andika ujumbe wako hapa..."></textarea>
+        <button class="btn" onclick="generateTextLink()">TENGENEZA LINK YA MANENO</button>
+    </div>
+
+    <div id="loader" style="display:none; margin-top:10px;">Inasindika... ⏳</div>
+
+    <div class="result-box" id="result-box">
+        <strong style="font-size: 13px;">URL YAKO TAYARI:</strong><br>
+        <span id="final-url" style="font-size: 12px; color: blue;"></span><br><br>
+        <button onclick="copyLink()" style="cursor:pointer; padding:5px;">COPY LINK</button>
+    </div>
+</div>
+
+<div class="container" id="view-text-area">
+    <h3 style="color: var(--dark); border-bottom: 2px solid var(--green);">Ujumbe wa Siri (Dvary)</h3>
+    <p id="content-display" style="white-space: pre-wrap; color: #333;"></p>
+    <button class="btn" onclick="window.location.href = window.location.pathname">TENGENEZA YAKO</button>
+</div>
+
+<script>
+    // Angalia kama link ina maandishi ndani (Ujasusi wa URL)
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedText = urlParams.get('msg');
+        if (encodedText) {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('view-text-area').style.display = 'block';
+            document.getElementById('content-display').innerText = atob(encodedText);
+        }
+    };
+
+    function switchTab(n) {
+        document.getElementById('tab1').className = n === 1 ? 'tab active-tab' : 'tab';
+        document.getElementById('tab2').className = n === 2 ? 'tab active-tab' : 'tab';
+        document.getElementById('picha-section').style.display = n === 1 ? 'block' : 'none';
+        document.getElementById('maandishi-section').style.display = n === 2 ? 'block' : 'none';
+        document.getElementById('result-box').style.display = 'none';
+    }
+
+    // 1. Ujasusi wa Picha/Video
+    async function uploadCloudinary() {
+        const file = document.getElementById('file-input').files[0];
+        if(!file) return alert("Chagua file!");
+        document.getElementById('loader').style.display = 'block';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'dvary_preset');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/dvbftux6w/auto/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        
+        showResult(data.secure_url);
+    }
+
+    // 2. Ujasusi wa Maandishi (Text to URL)
+    function generateTextLink() {
+        const text = document.getElementById('text-input').value;
+        if(!text) return alert("Andika maneno kwanza!");
+        
+        // Tunageuza maneno kuwa Base64 ili yaingie kwenye URL
+        const encoded = btoa(text);
+        const baseUrl = window.location.href.split('?')[0];
+        const finalUrl = baseUrl + "?msg=" + encoded;
+        
+        showResult(finalUrl);
+    }
+
+    function showResult(url) {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('final-url').innerText = url;
+    }
+
+    function copyLink() {
+        const url = document.getElementById('final-url').innerText;
+        navigator.clipboard.writeText(url);
+        alert("Link imenakiliwa kitalaamu! 🌸");
+    }
+</script>
+
+</body>
+</html>
+
