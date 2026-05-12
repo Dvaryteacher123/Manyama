@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DVARY SUPER APP</title>
+
+<style>
+:root{--p:#00ffcc;--bg:#000;}
+body{margin:0;font-family:monospace;background:var(--bg);color:var(--p);overflow-x:hidden;}
+
+#matrix{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:0.25;}
+
+header{
+padding:10px;
+text-align:center;
+font-weight:bold;
+background:#050505;
+border-bottom:1px solid var(--p);
+}
+
+.searchBox{
+padding:10px;
+background:#111;
+position:sticky;
+top:0;
+z-index:10;
+}
+
+.searchBox input{
+width:100%;
+padding:12px;
+border-radius:20px;
+border:1px solid var(--p);
+background:#000;
+color:white;
+outline:none;
+}
+
+.nav{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+justify-content:center;
+padding:10px;
+background:#0d0d0d;
+}
+
+.nav button{
+padding:10px;
+border:none;
+border-radius:20px;
+background:var(--p);
+color:#000;
+font-weight:bold;
+cursor:pointer;
+}
+
+.section{display:none;padding:15px;max-width:500px;margin:auto;}
+.active{display:block;}
+
+.card{
+background:#111;
+padding:15px;
+border:1px solid var(--p);
+border-radius:15px;
+margin-top:10px;
+}
+
+input,textarea,select{
+width:100%;
+padding:10px;
+margin-top:8px;
+background:#000;
+color:white;
+border:1px solid #333;
+border-radius:8px;
+}
+
+textarea{height:140px;}
+
+.btn{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:var(--p);
+border:none;
+font-weight:bold;
+cursor:pointer;
+}
+
+.footer{text-align:center;font-size:10px;color:#666;padding:15px;}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<header>DVARY SUPER APP</header>
+
+<!-- 🔍 SEARCH TOP -->
+<div class="searchBox">
+<input type="text" id="searchInput" onkeyup="searchApp()" placeholder="Search app sections...">
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="show('unban')">UNBAN</button>
+<button onclick="show('movie')">MOVIES</button>
+<button onclick="show('link')">LINK PRO</button>
+<button onclick="show('contact')">CONTACT</button>
+</div>
+
+<!-- UNBAN -->
+<div id="unban" class="section active">
+<div class="card">
+<h3>UNBAN MASTER</h3>
+
+<select id="lang" onchange="langChange()">
+<option value="en">English</option>
+<option value="sw">Swahili</option>
+</select>
+
+<input id="num" placeholder="Phone number">
+
+<textarea id="msg" readonly></textarea>
+
+<button class="btn" onclick="send()">SEND APPEAL</button>
+</div>
+</div>
+
+<!-- MOVIE -->
+<div id="movie" class="section">
+<div class="card">
+<h3>MOVIE SEARCH</h3>
+
+<input id="movieInput" placeholder="Movie name">
+<button class="btn" onclick="movie()">SEARCH</button>
+
+<div id="result" style="display:none">
+<h3 id="title"></h3>
+<p id="plot"></p>
+</div>
+</div>
+</div>
+
+<!-- LINK -->
+<div id="link" class="section">
+<div class="card">
+<h3>LINK PRO</h3>
+
+<input type="file" id="file">
+<button class="btn" onclick="upload()">UPLOAD</button>
+
+<textarea id="text"></textarea>
+<button class="btn" onclick="gen()">GENERATE LINK</button>
+
+<p id="out"></p>
+</div>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="section">
+<div class="card">
+<h3>CONTACT</h3>
+<p>📞 +255 718 278 672</p>
+<a href="https://wa.me/255718278672">
+<button class="btn">WHATSAPP</button>
+</a>
+</div>
+</div>
+
+<div class="footer">DVARY SYSTEM FULL APP</div>
+
+<script>
+
+// NAV
+function show(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+// SEARCH
+function searchApp(){
+let val=document.getElementById("searchInput").value.toLowerCase();
+document.querySelectorAll(".section").forEach(sec=>{
+sec.style.display=sec.innerText.toLowerCase().includes(val)?"block":"none";
+});
+}
+
+// UNBAN TEXT
+const t={
+en:"Hello WhatsApp [NUMBER] please review my account",
+sw:"Ndugu WhatsApp [NUMBER] naomba msaada"
+};
+
+function langChange(){
+let l=document.getElementById("lang").value;
+document.getElementById("msg").value=t[l];
+}
+
+function send(){
+let n=document.getElementById("num").value;
+let l=document.getElementById("lang").value;
+window.location="mailto:support@whatsapp.com?body="+t[l].replace("[NUMBER]",n);
+}
+
+// MOVIE SIMPLE
+function movie(){
+let m=document.getElementById("movieInput").value;
+document.getElementById("result").style.display="block";
+document.getElementById("title").innerText="Result: "+m;
+document.getElementById("plot").innerText="Movie data loaded...";
+}
+
+// LINK PRO SIMPLE
+function upload(){
+document.getElementById("out").innerText="File uploaded (demo)";
+}
+
+function gen(){
+let txt=document.getElementById("text").value;
+document.getElementById("out").innerText="Link: "+btoa(txt);
+}
+
+// MATRIX
+let c=document.getElementById("matrix");
+let x=c.getContext("2d");
+c.width=innerWidth;c.height=innerHeight;
+let a="DVARY01".split("");let s=16;let cols=c.width/s;
+let d=Array(Math.floor(cols)).fill(1);
+
+setInterval(()=>{
+x.fillStyle="rgba(0,0,0,0.05)";
+x.fillRect(0,0,c.width,c.height);
+x.fillStyle="#00ffcc";
+x.font=s+"px monospace";
+d.forEach((v,i)=>{
+let t=a[Math.floor(Math.random()*a.length)];
+x.fillText(t,i*s,v*s);
+if(v*s>c.height&&Math.random()>0.975)d[i]=0;
+d[i]++;
+});
+},35);
+
+</script>
+
+</body>
+</html>
