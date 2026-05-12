@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DVARY SUPER APP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<style>
+:root{
+--primary:#00ffcc;
+--bg:#000;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;}
+
+body{background:var(--bg);color:white;overflow-x:hidden;}
+
+#matrix{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+z-index:-1;
+opacity:0.2;
+}
+
+header{
+padding:15px;
+background:#050505;
+border-bottom:1px solid var(--primary);
+text-align:center;
+font-weight:bold;
+font-size:22px;
+letter-spacing:2px;
+color:var(--primary);
+}
+
+.nav{
+display:flex;
+justify-content:center;
+gap:10px;
+padding:10px;
+flex-wrap:wrap;
+background:#0d0d0d;
+}
+
+.nav button{
+padding:12px 18px;
+border:none;
+border-radius:30px;
+background:var(--primary);
+color:#000;
+font-weight:bold;
+cursor:pointer;
+}
+
+.section{display:none;padding:15px;max-width:500px;margin:auto;}
+.active{display:block;}
+
+.card{
+background:rgba(17,17,17,0.95);
+padding:20px;
+border-radius:20px;
+border:1px solid var(--primary);
+margin-top:15px;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+margin-bottom:15px;
+text-align:center;
+color:var(--primary);
+}
+
+input,textarea,select{
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:10px;
+border:none;
+outline:none;
+background:#1d1d1d;
+color:white;
+}
+
+textarea{height:180px;resize:none;}
+
+.btn{
+width:100%;
+padding:15px;
+margin-top:15px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+background:var(--primary);
+color:#000;
+}
+
+.moviePoster{
+width:100%;
+max-width:220px;
+border-radius:15px;
+display:block;
+margin:auto;
+margin-top:15px;
+}
+
+.meta{color:#aaa;margin-top:10px;font-size:14px;}
+
+.btnGroup{display:flex;flex-direction:column;gap:10px;margin-top:15px;}
+.watch{background:#e50914;color:white;}
+.download{background:#007bff;color:white;}
+
+.footer{text-align:center;padding:20px;font-size:11px;color:#666;}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px;}
+.tab{flex:1;padding:10px;border-radius:10px;background:#eee;color:#000;font-weight:bold;cursor:pointer;}
+.active-tab{background:#25D366;color:white;}
+
+.result-box{
+display:none;
+margin-top:20px;
+padding:15px;
+background:#dcf8c6;
+color:#000;
+border-radius:10px;
+word-break:break-all;
+}
+
+.contact-box{
+background:#111;
+padding:20px;
+border-radius:15px;
+border:1px solid var(--primary);
+text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<header>DVARY SUPER APP</header>
+
+<div class="nav">
+<button onclick="showSection('unban')">UNBAN</button>
+<button onclick="showSection('movie')">MOVIES</button>
+<button onclick="showSection('linkpro')">LINK PRO</button>
+<button onclick="showSection('contact')">CONTACT</button>
+</div>
+
+<!-- UNBAN -->
+<div id="unban" class="section active">
+<div class="card">
+<div class="logo">DVARY UNBAN MASTER</div>
+
+<select id="langSwitch" onchange="changeContent()">
+<option value="en">English</option>
+<option value="sw">Kiswahili</option>
+<option value="fr">French</option>
+<option value="ar">Arabic</option>
+</select>
+
+<input id="phoneNumber" placeholder="Phone Number">
+<textarea id="appealMsg" readonly></textarea>
+
+<button class="btn" id="btn_text" onclick="sendEmail()">SEND APPEAL</button>
+</div>
+</div>
+
+<!-- MOVIE -->
+<div id="movie" class="section">
+<div class="card">
+<div class="logo">MOVIE SEARCH</div>
+
+<input id="movieInput" placeholder="Movie name">
+<button class="btn" onclick="tafutaMovie()">SEARCH</button>
+
+<div id="result" style="display:none;">
+<img id="moviePoster" class="moviePoster">
+<h2 id="movieTitle"></h2>
+<div id="movieMeta" class="meta"></div>
+<p id="moviePlot"></p>
+
+<div class="btnGroup">
+<a id="watchLink" class="btn watch" target="_blank">WATCH</a>
+<a id="downloadLink" class="btn download" target="_blank">DOWNLOAD</a>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- LINK PRO -->
+<div id="linkpro" class="section">
+<div class="card">
+
+<div class="logo">LINK PRO 🌸</div>
+
+<div class="tabs">
+<div id="tab1" class="tab active-tab" onclick="switchTab(1)">FILE</div>
+<div id="tab2" class="tab" onclick="switchTab(2)">TEXT</div>
+</div>
+
+<div id="picha-section">
+<input type="file" id="file-input">
+<button class="btn" onclick="uploadCloudinary()">UPLOAD</button>
+</div>
+
+<div id="maandishi-section" style="display:none;">
+<textarea id="text-input"></textarea>
+<button class="btn" onclick="generateTextLink()">GENERATE</button>
+</div>
+
+<div id="loader" style="display:none;">Loading...</div>
+
+<div class="result-box" id="result-box">
+<span id="final-url"></span>
+<button onclick="copyLink()">COPY</button>
+</div>
+
+</div>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="section">
+<div class="card contact-box">
+<div class="logo">CONTACT ME</div>
+
+<h2 style="color:var(--primary)">+255 718 278 672</h2>
+
+<a href="https://wa.me/255718278672" target="_blank">
+<button class="btn">WHATSAPP INBOX</button>
+</a>
+
+</div>
+</div>
+
+<div class="footer">DVARY SYSTEM</div>
+
+<script>
+function showSection(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+const content={
+en:{btn:"SEND APPEAL",msg:"Hello WhatsApp support [NUMBER]",placeholder:"Number"},
+sw:{btn:"TUMA MAOMBI",msg:"Naomba msaada [NUMBER]",placeholder:"Namba"},
+fr:{btn:"ENVOYER",msg:"Support request [NUMBER]",placeholder:"Numéro"},
+ar:{btn:"إرسال",msg:"طلب دعم [NUMBER]",placeholder:"رقم"}
+};
+
+function changeContent(){
+let l=document.getElementById('langSwitch').value;
+document.getElementById('btn_text').innerText=content[l].btn;
+document.getElementById('phoneNumber').placeholder=content[l].placeholder;
+document.getElementById('appealMsg').value=content[l].msg;
+}
+
+function sendEmail(){
+let n=document.getElementById('phoneNumber').value;
+let l=document.getElementById('langSwitch').value;
+if(!n)return;
+let msg=content[l].msg.replace('[NUMBER]',n);
+window.location.href="mailto:support@whatsapp.com?body="+encodeURIComponent(msg);
+}
+
+async function tafutaMovie(){
+let m=document.getElementById('movieInput').value;
+if(!m)return;
+
+let url=`https://www.omdbapi.com/?t=${m}&apikey=A46b7201`;
+let r=await fetch(url);
+let d=await r.json();
+
+if(d.Response==="True"){
+document.getElementById('result').style.display="block";
+movieTitle.innerText=d.Title;
+movieMeta.innerText=d.Year+" | "+d.Genre;
+moviePlot.innerText=d.Plot;
+moviePoster.src=d.Poster;
+
+watchLink.href=`https://vidsrc.to/embed/movie/${d.imdbID}`;
+downloadLink.href=`https://vidsrc.icu/embed/movie/${d.imdbID}`;
+}
+}
+
+function switchTab(n){
+document.getElementById('tab1').className=n===1?'tab active-tab':'tab';
+document.getElementById('tab2').className=n===2?'tab active-tab':'tab';
+document.getElementById('picha-section').style.display=n===1?'block':'none';
+document.getElementById('maandishi-section').style.display=n===2?'block':'none';
+}
+
+async function uploadCloudinary(){
+let file=document.getElementById('file-input').files[0];
+if(!file)return;
+
+document.getElementById('loader').style.display='block';
+
+let form=new FormData();
+form.append('file',file);
+form.append('upload_preset','dvary_preset');
+
+let res=await fetch('https://api.cloudinary.com/v1_1/dvbftux6w/auto/upload',{method:'POST',body:form});
+let data=await res.json();
+
+document.getElementById('final-url').innerText=data.secure_url;
+document.getElementById('result-box').style.display='block';
+
+document.getElementById('loader').style.display='none';
+}
+
+function generateTextLink(){
+let t=document.getElementById('text-input').value;
+let url=window.location.href.split('?')[0]+"?msg="+btoa(t);
+
+document.getElementById('final-url').innerText=url;
+document.getElementById('result-box').style.display='block';
+}
+
+function copyLink(){
+navigator.clipboard.writeText(document.getElementById('final-url').innerText);
+alert("Copied");
+}
+
+let c=document.getElementById('matrix');
+let x=c.getContext('2d');
+c.width=innerWidth;
+c.height=innerHeight;
+
+let chars="DVARY01".split('');
+let size=16;
+let cols=c.width/size;
+let drops=Array(Math.floor(cols)).fill(1);
+
+setInterval(()=>{
+x.fillStyle="rgba(0,0,0,0.05)";
+x.fillRect(0,0,c.width,c.height);
+x.fillStyle="#00ffcc";
+x.font=size+"px monospace";
+
+drops.forEach((y,i)=>{
+let t=chars[Math.floor(Math.random()*chars.length)];
+x.fillText(t,i*size,y*size);
+if(y*size>c.height&&Math.random()>0.975)drops[i]=0;
+drops[i]++;
+});
+},35);
+
+</script>
+
+</body>
+</html>
