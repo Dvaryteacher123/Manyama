@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DVARY QR PRO</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:#0f172a;
+      color:white;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+    }
+
+    .container{
+      width:100%;
+      max-width:450px;
+      background:#1e293b;
+      padding:25px;
+      border-radius:20px;
+      box-shadow:0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:20px;
+      color:#38bdf8;
+    }
+
+    input, textarea{
+      width:100%;
+      padding:15px;
+      border:none;
+      border-radius:12px;
+      margin-top:10px;
+      background:#334155;
+      color:white;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:15px;
+      border:none;
+      border-radius:12px;
+      margin-top:15px;
+      background:#0ea5e9;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:#0284c7;
+    }
+
+    #qrcode{
+      margin-top:20px;
+      display:flex;
+      justify-content:center;
+      background:white;
+      padding:15px;
+      border-radius:15px;
+    }
+
+    #reader{
+      width:100%;
+      margin-top:20px;
+      border-radius:15px;
+      overflow:hidden;
+    }
+
+    .result{
+      margin-top:15px;
+      padding:12px;
+      background:#334155;
+      border-radius:12px;
+      word-break:break-word;
+    }
+
+    .top-buttons{
+      display:flex;
+      gap:10px;
+    }
+
+    .top-buttons button{
+      flex:1;
+    }
+
+    .dark-toggle{
+      background:#22c55e;
+    }
+
+    .download-btn{
+      background:#a855f7;
+    }
+
+    .copy-btn{
+      background:#f59e0b;
+    }
+
+    .light-mode{
+      background:#f1f5f9;
+      color:black;
+    }
+
+    .light-mode .container{
+      background:white;
+      color:black;
+    }
+
+    .light-mode input,
+    .light-mode textarea,
+    .light-mode .result{
+      background:#e2e8f0;
+      color:black;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>DVARY QR PRO</h1>
+
+  <textarea id="text" rows="4" placeholder="Write text or paste link..."></textarea>
+
+  <button onclick="generateQR()">Generate QR Code</button>
+
+  <div id="qrcode"></div>
+
+  <div class="top-buttons">
+    <button class="download-btn" onclick="downloadQR()">Download</button>
+    <button class="copy-btn" onclick="copyText()">Copy Text</button>
+  </div>
+
+  <button class="dark-toggle" onclick="toggleMode()">Dark / Light Mode</button>
+
+  <button onclick="startScanner()">Start QR Scanner</button>
+
+  <div id="reader"></div>
+
+  <div class="result" id="result">Scanned result will appear here...</div>
+</div>
+
+<script>
+  let qr;
+
+  function generateQR(){
+    const text = document.getElementById('text').value;
+    const qrDiv = document.getElementById('qrcode');
+
+    qrDiv.innerHTML = "";
+
+    if(text.trim() === ""){
+      alert("Please enter text");
+      return;
+    }
+
+    qr = new QRCode(qrDiv, {
+      text: text,
+      width: 220,
+      height: 220,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  function downloadQR(){
+    const img = document.querySelector('#qrcode img');
+
+    if(!img){
+      alert('Generate QR first');
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = img.src;
+    link.download = 'dvary-qr.png';
+    link.click();
+  }
+
+  function copyText(){
+    const text = document.getElementById('text');
+
+    if(text.value.trim() === ''){
+      alert('No text to copy');
+      return;
+    }
+
+    navigator.clipboard.writeText(text.value);
+    alert('Text copied');
+  }
+
+  function toggleMode(){
+    document.body.classList.toggle('light-mode');
+  }
+
+  function startScanner(){
+    const resultBox = document.getElementById('result');
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then(devices => {
+      if(devices && devices.length){
+        html5QrCode.start(
+          devices[0].id,
+          {
+            fps:10,
+            qrbox:250
+          },
+          (decodedText) => {
+            resultBox.innerHTML = decodedText;
+          },
+          (errorMessage) => {
+          }
+        );
+      }
+    }).catch(err => {
+      resultBox.innerHTML = err;
+    });
+  }
+</script>
+
+</body>
+</html>
